@@ -1,20 +1,15 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Editar jogo</h2>
-    </x-slot>
+<x-app-layout title="Editar jogo" :subtitle="$game->title">
+    <form method="POST" action="{{ route('games.update', $game) }}" class="max-w-xl space-y-6">
+        @csrf
+        @method('PUT')
 
-    <div class="py-12">
-        <div class="max-w-xl mx-auto sm:px-6 lg:px-8">
-            <form method="POST" action="{{ route('games.update', $game) }}" class="bg-white shadow-sm sm:rounded-lg p-6 space-y-6">
-                @csrf
-                @method('PUT')
-                @include('games._form')
+        <x-card class="space-y-6 p-5 sm:p-6">
+            @include('games._form')
+        </x-card>
 
-                <div class="flex items-center gap-4">
-                    <x-primary-button>{{ __('Save') }}</x-primary-button>
-                    <a href="{{ route('games.show', $game) }}" class="text-sm text-gray-600 hover:underline">{{ __('Cancel') }}</a>
-                </div>
-            </form>
+        <div class="flex items-center gap-3">
+            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <x-button :href="route('games.show', $game)" variant="ghost">{{ __('Cancel') }}</x-button>
         </div>
-    </div>
+    </form>
 </x-app-layout>

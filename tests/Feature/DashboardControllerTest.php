@@ -30,7 +30,20 @@ test('summarizes the current year, the backlog and what is being played', functi
         ->assertSee('Elden Ring');
 });
 
-test('shows only the five most recent playthroughs of the user', function () {
+test('counts the playthroughs of the current year per month', function () {
+    $game = Game::factory()->completed()->for($this->user)->create();
+    Playthrough::factory()->for($game)->count(2)->create(['completed_at' => '2026-01-31']);
+    Playthrough::factory()->for($game)->create(['completed_at' => '2026-12-31']);
+    Playthrough::factory()->for($game)->create(['completed_at' => '2025-12-31']);
+    Playthrough::factory()->create(['completed_at' => '2026-01-10']);
+
+    $this->actingAs($this->user)
+        ->get(route('dashboard'))
+        ->assertViewHas('monthlyCounts', fn ($counts) => $counts->keys()->all() === range(1, 12)
+            && $counts->all() === [1 => 2, 2 => 0, 3 => 0, 4 => 0, 5 => 0, 6 => 0, 7 => 0, 8 => 0, 9 => 0, 10 => 0, 11 => 0, 12 => 1]);
+});
+
+test('shows only the four most recent playthroughs of the user', function () {
     $game = Game::factory()->completed()->for($this->user)->create();
 
     foreach (range(1, 6) as $day) {
@@ -39,6 +52,6 @@ test('shows only the five most recent playthroughs of the user', function () {
 
     $this->actingAs($this->user)
         ->get(route('dashboard'))
-        ->assertViewHas('recentPlaythroughs', fn ($recent) => $recent->count() === 5
+        ->assertViewHas('recentPlaythroughs', fn ($recent) => $recent->count() === 4
             && $recent->first()->completed_at->toDateString() === '2026-01-06');
 });

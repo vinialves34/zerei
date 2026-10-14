@@ -1,3 +1,3 @@
-<select {{ $attributes->merge(['class' => 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm']) }}>
+<select {{ $attributes->merge(['class' => 'rounded-lg border-line bg-surface-2 text-ink focus:border-accent focus:ring-accent']) }}>
     {{ $slot }}
 </select>

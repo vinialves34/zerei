@@ -1,32 +1,26 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Registrar zerada</h2>
-    </x-slot>
+<x-app-layout title="Registrar zerada" subtitle="Cadastre um jogo que você terminou">
+    <form method="POST" action="{{ route('playthroughs.store') }}" class="max-w-xl space-y-6">
+        @csrf
 
-    <div class="py-12">
-        <div class="max-w-xl mx-auto sm:px-6 lg:px-8">
-            <form method="POST" action="{{ route('playthroughs.store') }}" class="bg-white shadow-sm sm:rounded-lg p-6 space-y-6">
-                @csrf
+        <x-card class="space-y-6 p-5 sm:p-6">
+            <div>
+                <x-input-label for="title" value="Jogo" />
+                <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" list="game-titles" :value="old('title', $title)" required autofocus autocomplete="off" />
+                <datalist id="game-titles">
+                    @foreach ($titles as $gameTitle)
+                        <option value="{{ $gameTitle }}"></option>
+                    @endforeach
+                </datalist>
+                <p class="mt-1.5 text-sm text-muted">Escolha um jogo já cadastrado ou digite um novo título.</p>
+                <x-input-error :messages="$errors->get('title')" class="mt-2" />
+            </div>
 
-                <div>
-                    <x-input-label for="title" value="Jogo" />
-                    <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" list="game-titles" :value="old('title', $title)" required autofocus />
-                    <datalist id="game-titles">
-                        @foreach ($titles as $gameTitle)
-                            <option value="{{ $gameTitle }}"></option>
-                        @endforeach
-                    </datalist>
-                    <p class="mt-1 text-sm text-gray-500">Escolha um jogo já cadastrado ou digite um novo título.</p>
-                    <x-input-error :messages="$errors->get('title')" class="mt-2" />
-                </div>
+            @include('playthroughs._form')
+        </x-card>
 
-                @include('playthroughs._form')
-
-                <div class="flex items-center gap-4">
-                    <x-primary-button>{{ __('Save') }}</x-primary-button>
-                    <a href="{{ route('playthroughs.index') }}" class="text-sm text-gray-600 hover:underline">{{ __('Cancel') }}</a>
-                </div>
-            </form>
+        <div class="flex items-center gap-3">
+            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <x-button :href="route('playthroughs.index')" variant="ghost">{{ __('Cancel') }}</x-button>
         </div>
-    </div>
+    </form>
 </x-app-layout>

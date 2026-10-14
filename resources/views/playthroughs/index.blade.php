@@ -1,50 +1,41 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Zeradas{{ $year ? " de {$year}" : '' }}</h2>
-            <a href="{{ route('playthroughs.create') }}"><x-primary-button type="button">Registrar zerada</x-primary-button></a>
-        </div>
+<x-app-layout :title="$year ? 'Zeradas de '.$year : 'Zeradas'" subtitle="Tudo o que você terminou">
+    <x-slot name="actions">
+        <x-button :href="route('playthroughs.create')" class="max-lg:hidden">
+            <x-icon name="plus" class="size-4" />
+            Registrar zerada
+        </x-button>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
-            <nav class="flex flex-wrap gap-2 px-4 sm:px-0 text-sm">
-                <a href="{{ route('playthroughs.index') }}" @class(['px-3 py-1 rounded-full', 'bg-gray-800 text-white' => ! $year, 'bg-white text-gray-700' => $year])>Todos os anos</a>
-                @foreach ($years as $option)
-                    <a href="{{ route('playthroughs.index', ['year' => $option]) }}" @class(['px-3 py-1 rounded-full', 'bg-gray-800 text-white' => $year === $option, 'bg-white text-gray-700' => $year !== $option])>{{ $option }}</a>
-                @endforeach
-            </nav>
+    <nav class="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0" aria-label="Filtrar por ano">
+        <a href="{{ route('playthroughs.index') }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => ! $year, 'bg-surface-2 text-muted hover:text-ink' => $year])>Todos os anos</a>
+        @foreach ($years as $option)
+            <a href="{{ route('playthroughs.index', ['year' => $option]) }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => $year === $option, 'bg-surface-2 text-muted hover:text-ink' => $year !== $option])>{{ $option }}</a>
+        @endforeach
+    </nav>
 
-            <div class="bg-white shadow-sm sm:rounded-lg overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-100 text-sm">
-                    <thead class="text-left text-gray-500">
-                        <tr>
-                            <th class="px-4 py-3 font-medium">Data</th>
-                            <th class="px-4 py-3 font-medium">Jogo</th>
-                            <th class="px-4 py-3 font-medium">Plataforma</th>
-                            <th class="px-4 py-3 font-medium">Conclusão</th>
-                            <th class="px-4 py-3 font-medium">Nota</th>
-                            <th class="px-4 py-3"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse ($playthroughs as $playthrough)
-                            <tr>
-                                <td class="px-4 py-3 whitespace-nowrap">{{ $playthrough->completed_at->format('d/m/Y') }}</td>
-                                <td class="px-4 py-3"><a href="{{ route('games.show', $playthrough->game) }}" class="text-indigo-600 hover:underline">{{ $playthrough->game->title }}</a></td>
-                                <td class="px-4 py-3">{{ $playthrough->platform->label() }}</td>
-                                <td class="px-4 py-3">{{ $playthrough->completion_level->label() }}</td>
-                                <td class="px-4 py-3"><x-rating :value="$playthrough->rating" /></td>
-                                <td class="px-4 py-3 text-right"><a href="{{ route('playthroughs.edit', $playthrough) }}" class="text-indigo-600 hover:underline">Editar</a></td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="6" class="px-4 py-6 text-center text-gray-500">Nenhuma zerada registrada.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <x-card class="divide-y divide-line">
+        @forelse ($playthroughs as $playthrough)
+            <div class="flex items-center gap-3 px-4 py-3">
+                <a href="{{ route('games.show', $playthrough->game) }}" class="flex min-w-0 flex-1 items-center gap-3">
+                    <x-game-cover :title="$playthrough->game->title" size="sm" />
+                    <div class="min-w-0 flex-1">
+                        <div class="truncate font-medium">{{ $playthrough->game->title }}</div>
+                        <div class="truncate text-xs text-muted">
+                            {{ $playthrough->completed_at->format('d/m/Y') }} · {{ $playthrough->platform->label() }} · {{ $playthrough->completion_level->label() }}
+                        </div>
+                    </div>
+                    <x-rating :value="$playthrough->rating" class="hidden text-sm sm:inline-flex" />
+                </a>
+                <a href="{{ route('playthroughs.edit', $playthrough) }}" class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-surface-2 hover:text-ink" aria-label="Editar zerada de {{ $playthrough->game->title }}">
+                    <x-icon name="pencil" class="size-4" />
+                </a>
             </div>
+        @empty
+            <x-empty-state title="Nenhuma zerada registrada" description="Quando você terminar um jogo, registre aqui para acompanhar sua jornada.">
+                <x-button :href="route('playthroughs.create')">Registrar zerada</x-button>
+            </x-empty-state>
+        @endforelse
+    </x-card>
 
-            {{ $playthroughs->links() }}
-        </div>
-    </div>
+    <div class="mt-4">{{ $playthroughs->links() }}</div>
 </x-app-layout>

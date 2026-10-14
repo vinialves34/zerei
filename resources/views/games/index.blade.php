@@ -1,39 +1,36 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Jogos</h2>
-            <a href="{{ route('games.create') }}"><x-primary-button type="button">Novo jogo</x-primary-button></a>
-        </div>
+<x-app-layout title="Jogos" subtitle="Seu backlog e tudo o que você já jogou">
+    <x-slot name="actions">
+        <x-button :href="route('games.create')">
+            <x-icon name="plus" class="size-4" />
+            Novo jogo
+        </x-button>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
-            <nav class="flex flex-wrap gap-2 px-4 sm:px-0 text-sm">
-                <a href="{{ route('games.index') }}" @class(['px-3 py-1 rounded-full', 'bg-gray-800 text-white' => ! $status, 'bg-white text-gray-700' => $status])>Todos</a>
-                @foreach (\App\Enums\GameStatus::cases() as $option)
-                    <a href="{{ route('games.index', ['status' => $option->value]) }}" @class(['px-3 py-1 rounded-full', 'bg-gray-800 text-white' => $status === $option, 'bg-white text-gray-700' => $status !== $option])>{{ $option->label() }}</a>
-                @endforeach
-            </nav>
+    <nav class="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0" aria-label="Filtrar por status">
+        <a href="{{ route('games.index') }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => ! $status, 'bg-surface-2 text-muted hover:text-ink' => $status])>Todos</a>
+        @foreach (\App\Enums\GameStatus::cases() as $option)
+            <a href="{{ route('games.index', ['status' => $option->value]) }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => $status === $option, 'bg-surface-2 text-muted hover:text-ink' => $status !== $option])>{{ $option->label() }}</a>
+        @endforeach
+    </nav>
 
-            <div class="bg-white shadow-sm sm:rounded-lg">
-                <ul class="divide-y divide-gray-100">
-                    @forelse ($games as $game)
-                        <li class="p-4 flex items-center justify-between gap-4">
-                            <a href="{{ route('games.show', $game) }}" class="text-indigo-600 hover:underline">{{ $game->title }}</a>
-                            <span class="text-sm text-gray-500">
-                                {{ $game->status->label() }}
-                                @if ($game->playthroughs_count > 1)
-                                    · {{ $game->playthroughs_count }}x
-                                @endif
-                            </span>
-                        </li>
-                    @empty
-                        <li class="p-4 text-sm text-gray-500">Nenhum jogo encontrado.</li>
-                    @endforelse
-                </ul>
-            </div>
+    <x-card class="divide-y divide-line">
+        @forelse ($games as $game)
+            <a href="{{ route('games.show', $game) }}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-surface-2/50">
+                <x-game-cover :title="$game->title" size="sm" />
+                <div class="min-w-0 flex-1">
+                    <div class="truncate font-medium">{{ $game->title }}</div>
+                    @if ($game->playthroughs_count > 0)
+                        <div class="text-xs text-muted">{{ $game->playthroughs_count }} {{ $game->playthroughs_count === 1 ? 'zerada' : 'zeradas' }}</div>
+                    @endif
+                </div>
+                <x-status-badge :status="$game->status" />
+            </a>
+        @empty
+            <x-empty-state title="Nenhum jogo encontrado" description="Cadastre os jogos que você quer zerar ou registre uma zerada.">
+                <x-button :href="route('games.create')">Novo jogo</x-button>
+            </x-empty-state>
+        @endforelse
+    </x-card>
 
-            {{ $games->links() }}
-        </div>
-    </div>
+    <div class="mt-4">{{ $games->links() }}</div>
 </x-app-layout>

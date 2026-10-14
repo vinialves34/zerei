@@ -29,7 +29,7 @@ describe('index', function () {
         $this->actingAs($this->user)
             ->get(route('years.index'))
             ->assertOk()
-            ->assertSee('Você ainda não registrou nenhuma zerada.');
+            ->assertSee('Nenhum ano ainda');
     });
 });
 
@@ -48,7 +48,7 @@ describe('show', function () {
             ->assertViewHas('total', 4)
             ->assertViewHas('timeline', fn ($timeline) => $timeline->keys()->all() === range(1, 12)
                 && $timeline->map->count()->all() === [1 => 1, 2 => 0, 3 => 2, 4 => 0, 5 => 0, 6 => 0, 7 => 0, 8 => 0, 9 => 0, 10 => 0, 11 => 0, 12 => 1])
-            ->assertSee('março');
+            ->assertSee('Março');
     });
 
     test('shows the timeline of a year without playthroughs', function () {

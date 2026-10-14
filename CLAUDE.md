@@ -21,6 +21,10 @@ Plataforma web para registrar os jogos que o usuário zerou ao longo do ano, aco
 - **Acesso cruzado entre usuários:** as policies respondem `Response::denyAsNotFound()`, então o recurso de outro usuário retorna 404 (não 403).
 - **Status do jogo:** `Completed` só é definido por `Game::registerPlaythrough()`; `Game::removePlaythrough()` devolve o jogo ao `Backlog` quando some a última zerada. Não grave `Completed` por outro caminho.
 - **Filtro por ano:** use o scope `Playthrough::completedInYear()`. Não use `whereBetween` com `Y-12-31`: o cast `date` grava `00:00:00` e o último dia ficaria de fora.
+- **Tema visual:** escuro por padrão, claro opcional (`data-theme="light"` no `<html>`, salvo em `localStorage`). As cores são variáveis CSS em `resources/css/app.css` expostas como utilitários Tailwind: `bg-app`, `bg-surface`, `bg-surface-2`, `border-line`, `text-ink`, `text-muted`, `bg-accent`, `text-ok`, `text-gold`, `text-danger`. Não use `gray-*`, `indigo-*` nem `bg-white` nas views; use esses tokens para o tema funcionar nos dois modos.
+- **Layout responsivo:** `layouts/app` usa sidebar fixa a partir de `lg`; abaixo disso, barra superior, abas inferiores e botão flutuante de registrar zerada. Páginas usam `<x-app-layout title="..." subtitle="...">` com slot opcional `actions`.
+- **Componentes:** reutilize `x-button` (variantes `primary`, `secondary`, `danger`, `ghost`; aceita `href`), `x-card`, `x-icon`, `x-pill`, `x-status-badge`, `x-rating`, `x-game-cover`, `x-month-chart` e `x-empty-state` antes de criar markup novo. Ícones novos entram no `match` de `components/icon.blade.php`.
+- **Classes que conflitam:** `x-button` já tem `inline-flex`; para esconder em telas pequenas use `max-lg:hidden`, não `hidden lg:inline-flex`.
 - **Datas:** timezone `America/Sao_Paulo`, locale `pt_BR`.
 
 ## Telas planejadas
