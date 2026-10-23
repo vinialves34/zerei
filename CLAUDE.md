@@ -15,11 +15,39 @@ Plataforma web para registrar os jogos que o usuário zerou ao longo do ano, aco
 - `Playthrough` (pertence a `Game`): uma zerada. `completed_at` (data), `platform` (enum `Platform`, escolhido em dropdown), `rating` (1 a 5 estrelas), `completion_level` (enum `CompletionLevel`: `Story`, `Full`, `Platinum`). Um jogo pode ter várias zeradas (rejogadas).
 - Um `Game` vira `Completed` ao registrar a primeira `Playthrough`. Cadastrar uma zerada de um jogo no backlog não duplica o jogo.
 
+## Arquitetura
+
+Fluxo de uma requisição: **Rota → Controller → Service → Model**. Toda feature nova segue essa estrutura; o `tests/Unit/ArchitectureTest.php` falha se as fronteiras abaixo forem quebradas.
+
+- **Controller** (`app/Http/Controllers`): só preocupações de HTTP. Lê a requisição, autoriza (`Gate::authorize` ou policy no Form Request), valida (Form Request), chama **um ou mais services** e devolve a resposta (view, redirect, flash). Não faz consultas Eloquent, não abre transação (`DB`) e não contém regra de negócio. Recebe os services por injeção no construtor.
+- **Service** (`app/Services`, sufixo `Service`): regra de negócio, consultas e transações. Recebe dados já validados e o `User` dono dos dados como parâmetros e devolve models, coleções, paginators ou arrays tipados. Não conhece HTTP: não usa `Request`, `Auth`, `Gate`, `Redirect`, `Session` nem views. A autorização continua no controller; o escopo por usuário é responsabilidade do service (sempre consulta via `$user->games()`, `$user->playthroughs()`).
+- **Model** (`app/Models`): relacionamentos, casts, scopes (`#[Scope]`) e atributos. Sem regra de fluxo e sem dependência de services.
+- **Form Request** (`app/Http/Requests`): validação e autorização da entrada. O controller passa `validated()` ao service.
+- **Policy** (`app/Policies`): permissão por recurso; respondem `denyAsNotFound()` para dados de outro usuário.
+- **Enum** (`app/Enums`): valores fixos e rótulos (`label()`); não dependem de models, services nem HTTP.
+
+Services atuais:
+
+| Service | Responsabilidade |
+| --- | --- |
+| `GameService` | Listagem paginada com filtro de status, criação, edição e remoção de jogos, títulos para autocomplete |
+| `PlaythroughService` | Listagem por ano, registrar zerada (cria o jogo se preciso e marca `Completed`), editar e remover zerada |
+| `ReportService` | Contagem por ano, contagem por mês e linha do tempo mensal |
+| `DashboardService` | Monta o resumo do painel, usando o `ReportService` |
+
+Regras para novas features:
+
+- Uma classe de service por área de domínio (`XService`), registrada por autowiring do container; não precisa de provider.
+- Um service pode depender de outro via construtor (como o `DashboardService` usa o `ReportService`). Evite dependência circular.
+- Preocupações de apresentação (`withQueryString()`, mensagens flash, filtros lidos da query string) ficam no controller.
+- Teste a regra de negócio no service (`tests/Feature/Services/XServiceTest.php`) e o contrato HTTP (status, redirect, validação, 404 entre usuários) no controller (`tests/Feature/XControllerTest.php`).
+- Exceção atual: `ProfileController` e `Auth/*` (Breeze) mantêm a lógica no controller; só mexa neles se a tarefa pedir.
+
 ## Convenções
 
 - **Textos da interface:** views novas escritas direto em português. As views do Breeze usam `__()` com chave em inglês, traduzida em `lang/pt_BR.json`; o `TranslationTest` falha se uma chave `__()` não tiver tradução. Rótulos de enums ficam no método `label()` do enum.
 - **Acesso cruzado entre usuários:** as policies respondem `Response::denyAsNotFound()`, então o recurso de outro usuário retorna 404 (não 403).
-- **Status do jogo:** `Completed` só é definido por `Game::registerPlaythrough()`; `Game::removePlaythrough()` devolve o jogo ao `Backlog` quando some a última zerada. Não grave `Completed` por outro caminho.
+- **Status do jogo:** `Completed` só é definido por `PlaythroughService::register()`; `PlaythroughService::remove()` devolve o jogo ao `Backlog` quando some a última zerada. Não grave `Completed` por outro caminho.
 - **Filtro por ano:** use o scope `Playthrough::completedInYear()`. Não use `whereBetween` com `Y-12-31`: o cast `date` grava `00:00:00` e o último dia ficaria de fora.
 - **Tema visual:** escuro por padrão, claro opcional (`data-theme="light"` no `<html>`, salvo em `localStorage`). As cores são variáveis CSS em `resources/css/app.css` expostas como utilitários Tailwind: `bg-app`, `bg-surface`, `bg-surface-2`, `border-line`, `text-ink`, `text-muted`, `bg-accent`, `text-ok`, `text-gold`, `text-danger`. Não use `gray-*`, `indigo-*` nem `bg-white` nas views; use esses tokens para o tema funcionar nos dois modos.
 - **Layout responsivo:** `layouts/app` usa sidebar fixa a partir de `lg`; abaixo disso, barra superior, abas inferiores e botão flutuante de registrar zerada. Páginas usam `<x-app-layout title="..." subtitle="...">` com slot opcional `actions`.

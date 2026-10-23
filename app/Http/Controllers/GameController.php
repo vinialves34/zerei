@@ -6,6 +6,7 @@ use App\Enums\GameStatus;
 use App\Http\Requests\StoreGameRequest;
 use App\Http\Requests\UpdateGameRequest;
 use App\Models\Game;
+use App\Services\GameService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -13,21 +14,14 @@ use Illuminate\View\View;
 
 class GameController extends Controller
 {
+    public function __construct(private GameService $games) {}
+
     public function index(Request $request): View
     {
         $status = $request->enum('status', GameStatus::class);
 
-        $games = $request->user()
-            ->games()
-            ->when($status, fn ($query) => $query->where('status', $status))
-            ->withCount('playthroughs')
-            ->orderBy('title')
-            ->orderBy('id')
-            ->paginate(20)
-            ->withQueryString();
-
         return view('games.index', [
-            'games' => $games,
+            'games' => $this->games->paginate($request->user(), $status)->withQueryString(),
             'status' => $status,
         ]);
     }
@@ -39,7 +33,7 @@ class GameController extends Controller
 
     public function store(StoreGameRequest $request): RedirectResponse
     {
-        $game = $request->user()->games()->create(array_filter($request->validated(), fn ($value) => $value !== null));
+        $game = $this->games->create($request->user(), $request->validated());
 
         return redirect()
             ->route('games.show', $game)
@@ -50,9 +44,7 @@ class GameController extends Controller
     {
         Gate::authorize('view', $game);
 
-        return view('games.show', [
-            'game' => $game->load(['playthroughs' => fn ($query) => $query->orderByDesc('completed_at')->orderByDesc('id')]),
-        ]);
+        return view('games.show', ['game' => $this->games->withPlaythroughs($game)]);
     }
 
     public function edit(Game $game): View
@@ -64,7 +56,7 @@ class GameController extends Controller
 
     public function update(UpdateGameRequest $request, Game $game): RedirectResponse
     {
-        $game->update(array_filter($request->validated(), fn ($value) => $value !== null));
+        $this->games->update($game, $request->validated());
 
         return redirect()
             ->route('games.show', $game)
@@ -75,7 +67,7 @@ class GameController extends Controller
     {
         Gate::authorize('delete', $game);
 
-        $game->delete();
+        $this->games->delete($game);
 
         return redirect()
             ->route('games.index')
