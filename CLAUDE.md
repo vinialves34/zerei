@@ -6,7 +6,7 @@ Plataforma web para registrar os jogos que o usuário zerou ao longo do ano, aco
 
 - **Stack:** Laravel 13, Blade, Tailwind 4, Alpine.js (interações leves), Pest, SQLite. Sem Livewire/Inertia.
 - **Autenticação:** Laravel Breeze (stack Blade + Pest). Aplicação multiusuário; cada usuário só enxerga e altera os próprios dados (use Policies e escopo por `user_id`).
-- **Dados dos jogos:** cadastro 100% manual. Sem API externa (RAWG/IGDB) por enquanto; deixar o modelo preparado para isso depois.
+- **Dados dos jogos:** cadastro manual. A RAWG é usada só para a capa: o jogo guarda `rawg_id` e `cover_url` (nunca a imagem). A capa vem da busca da RAWG no formulário ou de um link `https` informado à mão; `php artisan games:fetch-covers` vincula jogos antigos por título exato. Exige `RAWG_API_KEY` e o link de atribuição à RAWG no rodapé do layout.
 - **Idioma:** interface e mensagens de validação em português (`pt_BR`); código, tabelas, models, rotas e nomes de variáveis em inglês.
 
 ## Domínio
@@ -30,7 +30,8 @@ Services atuais:
 
 | Service | Responsabilidade |
 | --- | --- |
-| `GameService` | Listagem paginada com filtro de status, criação, edição e remoção de jogos, títulos para autocomplete |
+| `GameService` | Listagem paginada com filtro de status, criação, edição e remoção de jogos, títulos para autocomplete, capas (busca na RAWG e vínculo por título) |
+| `RawgService` | Cliente da API da RAWG (`search`), com cache; devolve `[]` se a chave faltar ou a API falhar |
 | `PlaythroughService` | Listagem por ano, registrar zerada (cria o jogo se preciso e marca `Completed`), editar e remover zerada |
 | `ReportService` | Contagem por ano, contagem por mês e linha do tempo mensal |
 | `DashboardService` | Monta o resumo do painel, usando o `ReportService` |
