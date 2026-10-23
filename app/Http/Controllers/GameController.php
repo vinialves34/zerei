@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\GameStatus;
+use App\Http\Requests\RawgSearchRequest;
 use App\Http\Requests\StoreGameRequest;
 use App\Http\Requests\UpdateGameRequest;
 use App\Models\Game;
 use App\Services\GameService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -24,6 +26,11 @@ class GameController extends Controller
             'games' => $this->games->paginate($request->user(), $status)->withQueryString(),
             'status' => $status,
         ]);
+    }
+
+    public function rawgSearch(RawgSearchRequest $request): JsonResponse
+    {
+        return response()->json($this->games->searchRawg($request->validated('q')));
     }
 
     public function create(): View

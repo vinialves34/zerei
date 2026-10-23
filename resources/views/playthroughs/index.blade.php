@@ -17,7 +17,7 @@
         @forelse ($playthroughs as $playthrough)
             <div class="flex items-center gap-3 px-4 py-3">
                 <a href="{{ route('games.show', $playthrough->game) }}" class="flex min-w-0 flex-1 items-center gap-3">
-                    <x-game-cover :title="$playthrough->game->title" size="sm" />
+                    <x-game-cover :title="$playthrough->game->title" :url="$playthrough->game->cover_url" size="sm" />
                     <div class="min-w-0 flex-1">
                         <div class="truncate font-medium">{{ $playthrough->game->title }}</div>
                         <div class="truncate text-xs text-muted">

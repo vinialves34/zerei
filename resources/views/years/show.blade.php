@@ -22,7 +22,7 @@
                     <x-card class="mt-3 divide-y divide-line">
                         @foreach ($playthroughs as $playthrough)
                             <a href="{{ route('games.show', $playthrough->game) }}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-surface-2/50">
-                                <x-game-cover :title="$playthrough->game->title" size="sm" />
+                                <x-game-cover :title="$playthrough->game->title" :url="$playthrough->game->cover_url" size="sm" />
                                 <div class="min-w-0 flex-1">
                                     <div class="truncate font-medium">{{ $playthrough->game->title }}</div>
                                     <div class="truncate text-xs text-muted">

@@ -12,6 +12,7 @@ Route::view('/', 'welcome')->name('home');
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/games/rawg-search', [GameController::class, 'rawgSearch'])->middleware('throttle:30,1')->name('games.rawg-search');
     Route::resource('games', GameController::class);
     Route::resource('playthroughs', PlaythroughController::class)->except('show');
     Route::get('/years', [YearController::class, 'index'])->name('years.index');

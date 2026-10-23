@@ -1,4 +1,4 @@
-@props(['title', 'size' => 'md'])
+@props(['title', 'size' => 'md', 'url' => null])
 
 @php
 $palette = ['bg-blue-700', 'bg-rose-700', 'bg-emerald-700', 'bg-violet-700', 'bg-amber-700', 'bg-cyan-700', 'bg-fuchsia-700', 'bg-teal-700'];
@@ -19,4 +19,9 @@ $sizeClasses = match ($size) {
 };
 @endphp
 
-<div {{ $attributes->merge(['class' => "flex shrink-0 items-end p-2.5 font-semibold text-white/95 {$color} {$sizeClasses}"]) }} aria-hidden="true">{{ $initials }}</div>
+<div {{ $attributes->merge(['class' => "relative flex shrink-0 items-end overflow-hidden p-2.5 font-semibold text-white/95 {$color} {$sizeClasses}"]) }} aria-hidden="true">
+    {{ $initials }}
+    @if ($url)
+        <img src="{{ $url }}" alt="" loading="lazy" referrerpolicy="no-referrer" class="absolute inset-0 size-full object-cover" onerror="this.remove()">
+    @endif
+</div>

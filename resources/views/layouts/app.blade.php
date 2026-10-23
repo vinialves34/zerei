@@ -7,7 +7,7 @@
         @include('layouts.navigation')
 
         <div class="lg:pl-60">
-            <main class="mx-auto w-full max-w-5xl px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-12 lg:pt-10">
+            <main class="mx-auto w-full max-w-5xl px-4 pb-8 pt-6 sm:px-6 lg:px-8 lg:pb-12 lg:pt-10">
                 @if ($title)
                     <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
                         <div class="min-w-0">
@@ -31,6 +31,10 @@
 
                 {{ $slot }}
             </main>
+
+            <footer class="mx-auto w-full max-w-5xl px-4 pb-28 text-xs text-muted sm:px-6 lg:px-8 lg:pb-8">
+                Capas de jogos por <a href="https://rawg.io" target="_blank" rel="noopener" class="underline transition hover:text-ink">RAWG</a>
+            </footer>
         </div>
     </body>
 </html>

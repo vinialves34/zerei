@@ -5,6 +5,7 @@ use App\Models\Game;
 use App\Models\Playthrough;
 use App\Models\User;
 use App\Services\GameService;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -86,4 +87,86 @@ test('delete removes the game and its playthroughs', function () {
     $this->service->delete($game);
 
     expect(Game::count())->toBe(0)->and(Playthrough::count())->toBe(0);
+});
+
+describe('covers', function () {
+    beforeEach(function () {
+        config(['services.rawg.key' => 'test-key']);
+    });
+
+    test('create stores the cover and the RAWG id', function () {
+        $game = $this->service->create($this->user, [
+            'title' => 'Hades',
+            'rawg_id' => 123,
+            'cover_url' => 'https://media.rawg.io/hades.jpg',
+        ]);
+
+        expect($game->fresh())
+            ->rawg_id->toBe(123)
+            ->cover_url->toBe('https://media.rawg.io/hades.jpg');
+    });
+
+    test('create accepts a manual cover without a RAWG id', function () {
+        $game = $this->service->create($this->user, ['title' => 'Hades', 'rawg_id' => null, 'cover_url' => 'https://exemplo.com/hades.png']);
+
+        expect($game->fresh())
+            ->rawg_id->toBeNull()
+            ->cover_url->toBe('https://exemplo.com/hades.png');
+    });
+
+    test('update removes the cover and the RAWG id when cover_url is null', function () {
+        $game = Game::factory()->withCover()->create();
+
+        $this->service->update($game, ['title' => $game->title, 'rawg_id' => 99, 'cover_url' => null]);
+
+        expect($game->fresh())->rawg_id->toBeNull()->cover_url->toBeNull();
+    });
+
+    test('update keeps the cover when the cover fields are not given', function () {
+        $game = Game::factory()->withCover()->create();
+        $cover = $game->cover_url;
+
+        $this->service->update($game, ['title' => 'Novo título']);
+
+        expect($game->fresh())->title->toBe('Novo título')->cover_url->toBe($cover);
+    });
+
+    test('attachCoverByTitle links the game when a result has the exact title', function () {
+        Http::fake(['api.rawg.io/*' => Http::response(['results' => [
+            ['id' => 1, 'name' => 'Hades II', 'background_image' => 'https://media.rawg.io/hades2.jpg'],
+            ['id' => 2, 'name' => 'hades', 'background_image' => 'https://media.rawg.io/hades.jpg'],
+        ]])]);
+        $game = Game::factory()->create(['title' => 'Hades']);
+
+        expect($this->service->attachCoverByTitle($game))->toBeTrue()
+            ->and($game->fresh())
+            ->rawg_id->toBe(2)
+            ->cover_url->toBe('https://media.rawg.io/hades.jpg');
+    });
+
+    test('attachCoverByTitle leaves ambiguous titles alone', function () {
+        Http::fake(['api.rawg.io/*' => Http::response(['results' => [
+            ['id' => 1, 'name' => 'Hades II', 'background_image' => 'https://media.rawg.io/hades2.jpg'],
+        ]])]);
+        $game = Game::factory()->create(['title' => 'Hades']);
+
+        expect($this->service->attachCoverByTitle($game))->toBeFalse()
+            ->and($game->fresh()->cover_url)->toBeNull();
+    });
+
+    test('attachCoverByTitle never overwrites an existing cover', function () {
+        Http::fake();
+        $game = Game::factory()->create(['title' => 'Hades', 'cover_url' => 'https://exemplo.com/manual.png']);
+
+        expect($this->service->attachCoverByTitle($game))->toBeFalse();
+
+        Http::assertNothingSent();
+    });
+
+    test('withoutCover lists only games without a cover', function () {
+        Game::factory()->withCover()->create();
+        $semCapa = Game::factory()->create();
+
+        expect($this->service->withoutCover()->pluck('id')->all())->toBe([$semCapa->id]);
+    });
 });

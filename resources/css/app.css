@@ -54,6 +54,10 @@
 }
 
 @layer base {
+    [x-cloak] {
+        display: none !important;
+    }
+
     body {
         background-color: var(--app);
         color: var(--ink);

@@ -3,11 +3,7 @@
     $selectedStatus = old('status', isset($game) && ! $isCompleted ? $game->status->value : \App\Enums\GameStatus::Backlog->value);
 @endphp
 
-<div>
-    <x-input-label for="title" value="Título" />
-    <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" :value="old('title', $game->title ?? '')" required autofocus />
-    <x-input-error :messages="$errors->get('title')" class="mt-2" />
-</div>
+@include('games._cover-fields')
 
 <div>
     <x-input-label for="status" value="Status" />

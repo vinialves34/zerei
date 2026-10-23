@@ -171,6 +171,8 @@ return [
         'password_confirmation' => 'confirmação da senha',
         'current_password' => 'senha atual',
         'title' => 'título',
+        'cover_url' => 'URL da capa',
+        'q' => 'busca',
         'status' => 'status',
         'completed_at' => 'data de conclusão',
         'platform' => 'plataforma',

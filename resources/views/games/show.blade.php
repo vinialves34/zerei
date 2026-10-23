@@ -5,7 +5,7 @@
     </a>
 
     <div class="flex items-start gap-4 sm:gap-6">
-        <x-game-cover :title="$game->title" size="lg" />
+        <x-game-cover :title="$game->title" :url="$game->cover_url" size="lg" />
 
         <div class="min-w-0 flex-1">
             <x-status-badge :status="$game->status" />

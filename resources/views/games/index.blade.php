@@ -1,4 +1,4 @@
-<x-app-layout title="Jogos" subtitle="Seu backlog e tudo o que você já jogou">
+<x-app-layout title="Meus jogos" subtitle="Seu backlog e tudo o que você já jogou">
     <x-slot name="actions">
         <x-button :href="route('games.create')">
             <x-icon name="plus" class="size-4" />
@@ -16,7 +16,7 @@
     <x-card class="divide-y divide-line">
         @forelse ($games as $game)
             <a href="{{ route('games.show', $game) }}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-surface-2/50">
-                <x-game-cover :title="$game->title" size="sm" />
+                <x-game-cover :title="$game->title" :url="$game->cover_url" size="sm" />
                 <div class="min-w-0 flex-1">
                     <div class="truncate font-medium">{{ $game->title }}</div>
                     @if ($game->playthroughs_count > 0)

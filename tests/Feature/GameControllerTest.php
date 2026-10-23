@@ -4,6 +4,7 @@ use App\Enums\GameStatus;
 use App\Models\Game;
 use App\Models\Playthrough;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -228,5 +229,114 @@ describe('edit', function () {
         $this->actingAs($this->user)
             ->get(route('games.edit', Game::factory()->create()))
             ->assertNotFound();
+    });
+});
+
+describe('covers', function () {
+    test('stores the chosen RAWG cover on create', function () {
+        $this->actingAs($this->user)
+            ->post(route('games.store'), ['title' => 'Hades', 'rawg_id' => 123, 'cover_url' => 'https://media.rawg.io/hades.jpg'])
+            ->assertSessionHasNoErrors();
+
+        expect($this->user->games()->sole())
+            ->rawg_id->toBe(123)
+            ->cover_url->toBe('https://media.rawg.io/hades.jpg');
+    });
+
+    test('accepts a manual cover link on update and removes it when emptied', function () {
+        $game = Game::factory()->for($this->user)->withCover()->create();
+
+        $this->actingAs($this->user)
+            ->put(route('games.update', $game), ['title' => $game->title, 'cover_url' => 'https://exemplo.com/capa.png', 'rawg_id' => ''])
+            ->assertSessionHasNoErrors();
+
+        expect($game->fresh())->cover_url->toBe('https://exemplo.com/capa.png')->rawg_id->toBeNull();
+
+        $this->actingAs($this->user)
+            ->put(route('games.update', $game), ['title' => $game->title, 'cover_url' => '', 'rawg_id' => ''])
+            ->assertSessionHasNoErrors();
+
+        expect($game->fresh()->cover_url)->toBeNull();
+    });
+
+    test('rejects a cover link that is not https', function (string $url) {
+        $this->actingAs($this->user)
+            ->post(route('games.store'), ['title' => 'Hades', 'cover_url' => $url])
+            ->assertSessionHasErrors('cover_url');
+
+        expect(Game::count())->toBe(0);
+    })->with([
+        'http' => 'http://exemplo.com/capa.png',
+        'javascript' => 'javascript:alert(1)',
+        'data' => 'data:image/png;base64,AAAA',
+        'text' => 'não é um link',
+    ]);
+
+    test('rejects an invalid RAWG id', function () {
+        $this->actingAs($this->user)
+            ->post(route('games.store'), ['title' => 'Hades', 'rawg_id' => 'abc'])
+            ->assertSessionHasErrors('rawg_id');
+    });
+
+    test('shows the cover in the list and the RAWG attribution', function () {
+        Game::factory()->for($this->user)->create(['title' => 'Hades', 'cover_url' => 'https://media.rawg.io/hades.jpg']);
+
+        $this->actingAs($this->user)
+            ->get(route('games.index'))
+            ->assertOk()
+            ->assertSee('https://media.rawg.io/hades.jpg', false)
+            ->assertSee('https://rawg.io', false);
+    });
+
+    test('shows the initials when the game has no cover', function () {
+        Game::factory()->for($this->user)->create(['title' => 'Hollow Knight']);
+
+        $this->actingAs($this->user)
+            ->get(route('games.index'))
+            ->assertOk()
+            ->assertDontSee('<img', false);
+    });
+});
+
+describe('rawg search', function () {
+    beforeEach(function () {
+        config(['services.rawg.key' => 'test-key']);
+    });
+
+    test('guests are redirected to the login screen', function () {
+        $this->get(route('games.rawg-search', ['q' => 'hades']))->assertRedirect(route('login'));
+    });
+
+    test('returns the RAWG results as JSON', function () {
+        Http::fake(['api.rawg.io/*' => Http::response(['results' => [
+            ['id' => 7, 'name' => 'Hades', 'released' => '2020-09-17', 'background_image' => 'https://media.rawg.io/hades.jpg'],
+        ]])]);
+
+        $this->actingAs($this->user)
+            ->getJson(route('games.rawg-search', ['q' => 'hades']))
+            ->assertOk()
+            ->assertExactJson([
+                ['id' => 7, 'name' => 'Hades', 'released' => '2020-09-17', 'cover_url' => 'https://media.rawg.io/hades.jpg'],
+            ]);
+    });
+
+    test('requires a query with at least two characters', function (?string $query) {
+        Http::fake();
+
+        $this->actingAs($this->user)
+            ->getJson(route('games.rawg-search', ['q' => $query]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('q');
+
+        Http::assertNothingSent();
+    })->with([null, 'a']);
+
+    test('returns an empty list when RAWG is down', function () {
+        Http::fake(['api.rawg.io/*' => Http::response(null, 500)]);
+
+        $this->actingAs($this->user)
+            ->getJson(route('games.rawg-search', ['q' => 'hades']))
+            ->assertOk()
+            ->assertExactJson([]);
     });
 });
