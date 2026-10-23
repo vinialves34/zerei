@@ -34,6 +34,7 @@ Services atuais:
 | `PlaythroughService` | Listagem por ano, registrar zerada (cria o jogo se preciso e marca `Completed`), editar e remover zerada |
 | `ReportService` | Contagem por ano, contagem por mês e linha do tempo mensal |
 | `DashboardService` | Monta o resumo do painel, usando o `ReportService` |
+| `ProfileService` | Atualizar perfil (reverifica o e-mail quando muda) e excluir a conta |
 
 Regras para novas features:
 
@@ -41,7 +42,7 @@ Regras para novas features:
 - Um service pode depender de outro via construtor (como o `DashboardService` usa o `ReportService`). Evite dependência circular.
 - Preocupações de apresentação (`withQueryString()`, mensagens flash, filtros lidos da query string) ficam no controller.
 - Teste a regra de negócio no service (`tests/Feature/Services/XServiceTest.php`) e o contrato HTTP (status, redirect, validação, 404 entre usuários) no controller (`tests/Feature/XControllerTest.php`).
-- Exceção atual: `ProfileController` e `Auth/*` (Breeze) mantêm a lógica no controller; só mexa neles se a tarefa pedir.
+- Exceção atual: os controllers de `Auth/*` (Breeze: login, cadastro, redefinição e verificação de e-mail) mantêm o fluxo de autenticação no controller; só mexa neles se a tarefa pedir.
 
 ## Convenções
 

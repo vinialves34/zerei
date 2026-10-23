@@ -21,10 +21,7 @@ arch('feature controllers delegate queries and transactions to services')
         'Illuminate\\Support\\Facades\\DB',
         'Illuminate\\Database\\Eloquent\\Builder',
     ])
-    ->ignoring([
-        'App\\Http\\Controllers\\Auth',
-        'App\\Http\\Controllers\\ProfileController',
-    ]);
+    ->ignoring('App\\Http\\Controllers\\Auth');
 
 arch('services are not called from models')
     ->expect('App\Models')
