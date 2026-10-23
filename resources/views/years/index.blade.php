@@ -1,4 +1,4 @@
-<x-app-layout title="Anos" subtitle="Quantas zeradas em cada ano">
+<x-app-layout title="Registros por anos" subtitle="Quantas zeradas em cada ano">
     @if ($countsByYear->isEmpty())
         <x-card>
             <x-empty-state title="Nenhum ano ainda" description="Registre sua primeira zerada para começar a linha do tempo.">

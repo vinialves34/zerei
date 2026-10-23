@@ -2,8 +2,8 @@
 $links = [
     ['route' => 'dashboard', 'active' => 'dashboard', 'label' => 'Painel', 'icon' => 'dashboard'],
     ['route' => 'playthroughs.index', 'active' => 'playthroughs.*', 'label' => 'Zeradas', 'icon' => 'trophy'],
-    ['route' => 'games.index', 'active' => 'games.*', 'label' => 'Jogos', 'icon' => 'library'],
-    ['route' => 'years.index', 'active' => 'years.*', 'label' => 'Anos', 'icon' => 'calendar'],
+    ['route' => 'games.index', 'active' => 'games.*', 'label' => 'Meus jogos', 'icon' => 'library'],
+    ['route' => 'years.index', 'active' => 'years.*', 'label' => 'Registros por anos', 'icon' => 'calendar'],
 ];
 
 $initials = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(Auth::user()->name, 0, 1));
