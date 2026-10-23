@@ -26,6 +26,14 @@ class GameFactory extends Factory
         ];
     }
 
+    public function withCover(): static
+    {
+        return $this->state(fn () => [
+            'rawg_id' => fake()->unique()->numberBetween(1, 999999),
+            'cover_url' => 'https://media.rawg.io/media/games/'.fake()->md5().'.jpg',
+        ]);
+    }
+
     public function playing(): static
     {
         return $this->state(['status' => GameStatus::Playing]);
