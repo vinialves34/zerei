@@ -17,6 +17,8 @@ class StorePlaythroughRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
+            'rawg_id' => ['nullable', 'integer', 'min:1'],
+            'cover_url' => ['nullable', 'url:https', 'max:2048'],
             'completed_at' => ['required', 'date', 'before_or_equal:today'],
             'platform' => ['required', Rule::enum(Platform::class)],
             'rating' => ['required', 'integer', 'between:1,5'],

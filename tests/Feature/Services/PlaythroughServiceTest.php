@@ -122,3 +122,53 @@ describe('paginate', function () {
         expect($dates)->toBe(['2025-12-31', '2025-01-01']);
     });
 });
+
+describe('register with a cover', function () {
+    test('creates the game with the chosen cover', function () {
+        $this->service->register($this->user, 'Hades', $this->attributes, ['rawg_id' => 7, 'cover_url' => 'https://media.rawg.io/hades.jpg']);
+
+        expect($this->user->games()->sole())
+            ->rawg_id->toBe(7)
+            ->cover_url->toBe('https://media.rawg.io/hades.jpg');
+    });
+
+    test('accepts a manual cover link without a RAWG id', function () {
+        $this->service->register($this->user, 'Hades', $this->attributes, ['rawg_id' => null, 'cover_url' => 'https://exemplo.com/hades.png']);
+
+        expect($this->user->games()->sole())->rawg_id->toBeNull()->cover_url->toBe('https://exemplo.com/hades.png');
+    });
+
+    test('fills the cover of an existing game that has none', function () {
+        $game = Game::factory()->for($this->user)->create(['title' => 'Hades']);
+
+        $this->service->register($this->user, 'Hades', $this->attributes, ['rawg_id' => 7, 'cover_url' => 'https://media.rawg.io/hades.jpg']);
+
+        expect($game->fresh()->cover_url)->toBe('https://media.rawg.io/hades.jpg')
+            ->and($this->user->games()->count())->toBe(1);
+    });
+
+    test('keeps the existing cover of the game', function () {
+        $game = Game::factory()->for($this->user)->create(['title' => 'Hades', 'cover_url' => 'https://exemplo.com/manual.png']);
+
+        $this->service->register($this->user, 'Hades', $this->attributes, ['rawg_id' => 7, 'cover_url' => 'https://media.rawg.io/hades.jpg']);
+
+        expect($game->fresh()->cover_url)->toBe('https://exemplo.com/manual.png');
+    });
+
+    test('reuses the game that already has the same RAWG id even with another title', function () {
+        $game = Game::factory()->for($this->user)->create(['title' => 'Hades', 'rawg_id' => 7, 'cover_url' => 'https://media.rawg.io/hades.jpg']);
+
+        $this->service->register($this->user, 'Hades (2020)', $this->attributes, ['rawg_id' => 7, 'cover_url' => 'https://media.rawg.io/hades.jpg']);
+
+        expect($this->user->games()->count())->toBe(1)
+            ->and($game->playthroughs()->count())->toBe(1);
+    });
+
+    test('does not reuse a game of another user with the same RAWG id', function () {
+        Game::factory()->create(['title' => 'Hades', 'rawg_id' => 7, 'cover_url' => 'https://media.rawg.io/hades.jpg']);
+
+        $this->service->register($this->user, 'Hades', $this->attributes, ['rawg_id' => 7, 'cover_url' => 'https://media.rawg.io/hades.jpg']);
+
+        expect($this->user->games()->sole()->playthroughs()->count())->toBe(1);
+    });
+});

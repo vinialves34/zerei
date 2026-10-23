@@ -48,7 +48,8 @@ class PlaythroughController extends Controller
         $this->playthroughs->register(
             $request->user(),
             $request->validated('title'),
-            $request->safe()->except('title'),
+            $request->safe()->except(['title', 'rawg_id', 'cover_url']),
+            $request->safe()->only(['rawg_id', 'cover_url']),
         );
 
         return redirect()

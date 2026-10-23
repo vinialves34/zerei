@@ -91,6 +91,24 @@ describe('create', function () {
 });
 
 describe('store', function () {
+    test('saves the chosen cover on the game created by the playthrough', function () {
+        $this->actingAs($this->user)
+            ->post(route('playthroughs.store'), [...$this->payload, 'rawg_id' => 7, 'cover_url' => 'https://media.rawg.io/hk.jpg'])
+            ->assertSessionHasNoErrors();
+
+        expect($this->user->games()->sole())
+            ->rawg_id->toBe(7)
+            ->cover_url->toBe('https://media.rawg.io/hk.jpg');
+    });
+
+    test('rejects a cover link that is not https', function () {
+        $this->actingAs($this->user)
+            ->post(route('playthroughs.store'), [...$this->payload, 'cover_url' => 'javascript:alert(1)'])
+            ->assertSessionHasErrors('cover_url');
+
+        expect(Game::count())->toBe(0);
+    });
+
     test('creates the game and marks it as completed when the title is new', function () {
         $this->actingAs($this->user)
             ->post(route('playthroughs.store'), $this->payload)

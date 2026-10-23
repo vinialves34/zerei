@@ -3,17 +3,7 @@
         @csrf
 
         <x-card class="space-y-6 p-5 sm:p-6">
-            <div>
-                <x-input-label for="title" value="Jogo" />
-                <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" list="game-titles" :value="old('title', $title)" required autofocus autocomplete="off" />
-                <datalist id="game-titles">
-                    @foreach ($titles as $gameTitle)
-                        <option value="{{ $gameTitle }}"></option>
-                    @endforeach
-                </datalist>
-                <p class="mt-1.5 text-sm text-muted">Escolha um jogo já cadastrado ou digite um novo título.</p>
-                <x-input-error :messages="$errors->get('title')" class="mt-2" />
-            </div>
+            @include('games._cover-fields', ['game' => null, 'initialTitle' => $title, 'titles' => $titles, 'titleHelp' => 'Escolha um jogo já cadastrado, busque na RAWG ou digite um novo título.'])
 
             @include('playthroughs._form')
         </x-card>
