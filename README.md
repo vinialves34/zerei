@@ -30,7 +30,7 @@ Plataforma web para registrar os jogos que você zerou ao longo do ano, acompanh
 ## Instalação
 
 ```bash
-git clone [<url-do-repositorio>](https://github.com/vinialves34/zerei.git) zerei
+git clone https://github.com/vinialves34/zerei.git zerei
 cd zerei
 composer setup
 ```
