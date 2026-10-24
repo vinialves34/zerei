@@ -225,6 +225,26 @@ describe('edit', function () {
             ->assertSee('Hades');
     });
 
+    test('preselects the keep option for a completed game so the status is not changed by accident', function () {
+        $game = Game::factory()->completed()->for($this->user)->create();
+
+        $this->actingAs($this->user)
+            ->get(route('games.edit', $game))
+            ->assertOk()
+            ->assertSee('<option value="" selected>Zerado (manter)</option>', false)
+            ->assertDontSee('<option value="backlog" selected>', false);
+    });
+
+    test('preselects the current status of a game that is not completed', function () {
+        $game = Game::factory()->playing()->for($this->user)->create();
+
+        $this->actingAs($this->user)
+            ->get(route('games.edit', $game))
+            ->assertOk()
+            ->assertSee('<option value="playing" selected>', false)
+            ->assertDontSee('Zerado (manter)');
+    });
+
     test('returns 404 for a game of another user', function () {
         $this->actingAs($this->user)
             ->get(route('games.edit', Game::factory()->create()))
