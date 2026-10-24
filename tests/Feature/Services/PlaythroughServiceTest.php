@@ -172,3 +172,13 @@ describe('register with a cover', function () {
         expect($this->user->games()->sole()->playthroughs()->count())->toBe(1);
     });
 });
+
+test('paginate returns ten playthroughs per page by default', function () {
+    Playthrough::factory()->for(Game::factory()->completed()->for($this->user))->count(11)->create();
+
+    $playthroughs = $this->service->paginate($this->user);
+
+    expect($playthroughs->perPage())->toBe(10)
+        ->and($playthroughs->items())->toHaveCount(10)
+        ->and($playthroughs->total())->toBe(11);
+});

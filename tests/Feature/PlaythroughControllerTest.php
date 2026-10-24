@@ -30,6 +30,18 @@ test('guests are redirected to the login screen', function (string $method, stri
 ]);
 
 describe('index', function () {
+    test('splits the list into pages of ten and keeps the year filter in the links', function () {
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user))->count(12)
+            ->sequence(fn ($sequence) => ['completed_at' => '2025-06-'.sprintf('%02d', $sequence->index + 1)])
+            ->create();
+
+        $this->actingAs($this->user)
+            ->get(route('playthroughs.index', ['year' => 2025]))
+            ->assertOk()
+            ->assertSee('Página 1 de 2')
+            ->assertSee('year=2025&amp;page=2', false);
+    });
+
     test('shows the platinum badge only on platinum playthroughs', function () {
         Playthrough::factory()->for(Game::factory()->completed()->for($this->user))->create(['completion_level' => 'full']);
 

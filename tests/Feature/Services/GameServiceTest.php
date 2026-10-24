@@ -187,3 +187,13 @@ test('paginate flags the games that have a platinum playthrough', function () {
         ->and($games['Sem platina']->has_platinum)->toBeFalse()
         ->and($games['Backlog']->has_platinum)->toBeFalse();
 });
+
+test('paginate returns ten games per page by default', function () {
+    Game::factory()->for($this->user)->count(11)->sequence(fn ($sequence) => ['title' => sprintf('Jogo %02d', $sequence->index)])->create();
+
+    $games = $this->service->paginate($this->user);
+
+    expect($games->perPage())->toBe(10)
+        ->and($games->items())->toHaveCount(10)
+        ->and($games->total())->toBe(11);
+});

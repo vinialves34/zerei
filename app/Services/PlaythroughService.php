@@ -14,7 +14,7 @@ class PlaythroughService
     /**
      * @return LengthAwarePaginator<int, Playthrough>
      */
-    public function paginate(User $user, ?int $year = null, int $perPage = 20): LengthAwarePaginator
+    public function paginate(User $user, ?int $year = null, int $perPage = 10): LengthAwarePaginator
     {
         return $user->playthroughs()
             ->with('game')

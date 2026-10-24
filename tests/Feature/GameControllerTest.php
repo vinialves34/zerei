@@ -56,6 +56,26 @@ describe('index', function () {
     });
 });
 
+describe('pagination', function () {
+    test('splits the list into pages of ten and keeps the status filter in the links', function () {
+        Game::factory()->for($this->user)->count(12)->sequence(fn ($sequence) => ['title' => sprintf('Jogo %02d', $sequence->index)])->create();
+
+        $this->actingAs($this->user)
+            ->get(route('games.index'))
+            ->assertOk()
+            ->assertSee('Jogo 09')
+            ->assertDontSee('Jogo 10')
+            ->assertSee('Página 1 de 2');
+
+        $this->actingAs($this->user)
+            ->get(route('games.index', ['status' => 'backlog', 'page' => 2]))
+            ->assertOk()
+            ->assertSee('Jogo 10')
+            ->assertSee('Página 2 de 2')
+            ->assertDontSee('Jogo 09');
+    });
+});
+
 describe('platinum badge', function () {
     test('marks only the games that have a platinum playthrough in the list', function () {
         Game::factory()->for($this->user)->completed()

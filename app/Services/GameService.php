@@ -20,7 +20,7 @@ class GameService
      *
      * @return LengthAwarePaginator<int, Game>
      */
-    public function paginate(User $user, ?GameStatus $status = null, int $perPage = 20): LengthAwarePaginator
+    public function paginate(User $user, ?GameStatus $status = null, int $perPage = 10): LengthAwarePaginator
     {
         return $user->games()
             ->when($status, fn (Builder $query) => $query->where('status', $status))
