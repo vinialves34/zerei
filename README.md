@@ -1,58 +1,86 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Zerei
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Plataforma web para registrar os jogos que você zerou ao longo do ano, acompanhar o histórico e manter uma lista de jogos que pretende zerar (backlog).
 
-## About Laravel
+## Funcionalidades
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Jogos zerados:** registre cada zerada com data, plataforma, nota (1 a 5 estrelas) e nível de conclusão (história, 100% ou platina). Um mesmo jogo pode ter várias zeradas, para quem gosta de rejogar.
+- **Backlog:** mantenha a lista de jogos que quer zerar e acompanhe o status de cada um (Backlog → Jogando → Zerado/Abandonado).
+- **Contagem por ano:** veja quantos jogos você zerou em cada ano.
+- **Linha do tempo:** acompanhe as zeradas mês a mês, em cada ano.
+- **Capas dos jogos:** busca de capas pela [RAWG](https://rawg.io) ou por link `https` informado à mão.
+- **Multiusuário:** cada pessoa enxerga e altera apenas os próprios dados.
+- **Tema escuro e claro**, com layout responsivo para desktop e celular.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tecnologias
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- [Laravel 13](https://laravel.com) com Blade (monolito fullstack, sem Livewire/Inertia)
+- [Tailwind CSS 4](https://tailwindcss.com) e [Alpine.js](https://alpinejs.dev)
+- [Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze) para autenticação
+- SQLite
+- [Pest](https://pestphp.com) para testes
+- [Laravel Pint](https://laravel.com/docs/pint) para formatação
 
-## Learning Laravel
+## Requisitos
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.3 ou superior
+- [Composer](https://getcomposer.org)
+- Node.js e npm
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalação
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <url-do-repositorio> zerei
+cd zerei
+composer setup
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+O script `composer setup` instala as dependências, cria o `.env`, gera a chave da aplicação, roda as migrations e compila os assets.
 
-## Contributing
+### Configuração da RAWG (opcional)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+As capas dos jogos vêm da API da RAWG. Para habilitar a busca de capas, crie uma chave em [rawg.io/apidocs](https://rawg.io/apidocs) e informe no `.env`:
 
-## Code of Conduct
+```dotenv
+RAWG_API_KEY=sua-chave
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Sem a chave, a aplicação funciona normalmente: a busca da RAWG não retorna resultados e a capa pode ser informada por link. Para vincular capas a jogos já cadastrados (por título exato):
 
-## Security Vulnerabilities
+```bash
+php artisan games:fetch-covers
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Desenvolvimento
 
-## License
+```bash
+composer run dev
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Sobe o servidor da aplicação e o Vite com hot reload.
+
+## Testes e formatação
+
+```bash
+composer test            # suíte completa
+vendor/bin/pint          # formata o código
+```
+
+## Arquitetura
+
+O fluxo de uma requisição é **Rota → Controller → Service → Model**:
+
+| Camada | Local | Responsabilidade |
+| --- | --- | --- |
+| Controller | `app/Http/Controllers` | Preocupações de HTTP: autoriza, valida e devolve a resposta |
+| Form Request | `app/Http/Requests` | Validação e autorização da entrada |
+| Service | `app/Services` | Regra de negócio, consultas e transações |
+| Model | `app/Models` | Relacionamentos, casts e scopes |
+| Policy | `app/Policies` | Permissão por recurso (dados de outro usuário retornam 404) |
+| Enum | `app/Enums` | Valores fixos e rótulos |
+
+O teste `tests/Unit/ArchitectureTest.php` falha se essas fronteiras forem quebradas. Mais detalhes sobre decisões de projeto, domínio e convenções estão no [CLAUDE.md](CLAUDE.md).
+
+## Licença
+
+Projeto de código aberto sob a licença [MIT](https://opensource.org/licenses/MIT).
