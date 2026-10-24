@@ -48,7 +48,12 @@
             <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
                 @foreach ($recentPlaythroughs as $playthrough)
                     <a href="{{ route('games.show', $playthrough->game) }}" class="group block min-w-0">
-                        <x-game-cover :title="$playthrough->game->title" :url="$playthrough->game->cover_url" class="transition group-hover:brightness-110" />
+                        <div class="relative">
+                            <x-game-cover :title="$playthrough->game->title" :url="$playthrough->game->cover_url" class="transition group-hover:brightness-110" />
+                            @if ($playthrough->completion_level === \App\Enums\CompletionLevel::Platinum)
+                                <x-platinum-badge overlay class="absolute right-2 top-2" />
+                            @endif
+                        </div>
                         <div class="mt-2 truncate text-sm font-medium">{{ $playthrough->game->title }}</div>
                         <div class="mt-0.5 flex items-center justify-between gap-2 text-xs">
                             <x-pill>{{ $playthrough->platform->label() }}</x-pill>

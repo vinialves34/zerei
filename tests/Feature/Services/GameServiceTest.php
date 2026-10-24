@@ -170,3 +170,20 @@ describe('covers', function () {
         expect($this->service->withoutCover()->pluck('id')->all())->toBe([$semCapa->id]);
     });
 });
+
+test('paginate flags the games that have a platinum playthrough', function () {
+    Game::factory()->for($this->user)->completed()
+        ->has(Playthrough::factory()->state(['completion_level' => 'story']))
+        ->has(Playthrough::factory()->state(['completion_level' => 'platinum']))
+        ->create(['title' => 'Com platina']);
+    Game::factory()->for($this->user)->completed()
+        ->has(Playthrough::factory()->state(['completion_level' => 'full']))
+        ->create(['title' => 'Sem platina']);
+    Game::factory()->for($this->user)->create(['title' => 'Backlog']);
+
+    $games = $this->service->paginate($this->user)->keyBy('title');
+
+    expect($games['Com platina']->has_platinum)->toBeTrue()
+        ->and($games['Sem platina']->has_platinum)->toBeFalse()
+        ->and($games['Backlog']->has_platinum)->toBeFalse();
+});

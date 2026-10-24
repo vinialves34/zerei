@@ -30,6 +30,22 @@ test('guests are redirected to the login screen', function (string $method, stri
 ]);
 
 describe('index', function () {
+    test('shows the platinum badge only on platinum playthroughs', function () {
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user))->create(['completion_level' => 'full']);
+
+        $this->actingAs($this->user)
+            ->get(route('playthroughs.index'))
+            ->assertOk()
+            ->assertDontSee('data-platinum', false);
+
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user))->create(['completion_level' => 'platinum']);
+
+        $this->actingAs($this->user)
+            ->get(route('playthroughs.index'))
+            ->assertOk()
+            ->assertSee('data-platinum', false);
+    });
+
     test('lists only the playthroughs of the authenticated user, newest first', function () {
         Playthrough::factory()->for(Game::factory()->completed()->for($this->user)->state(['title' => 'Antigo']))->create(['completed_at' => '2024-01-10']);
         Playthrough::factory()->for(Game::factory()->completed()->for($this->user)->state(['title' => 'Recente']))->create(['completed_at' => '2025-06-20']);

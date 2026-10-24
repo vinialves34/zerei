@@ -42,6 +42,17 @@ class Playthrough extends Model
     }
 
     /**
+     * Playthroughs completed with the platinum trophy.
+     *
+     * @param  Builder<Playthrough>  $query
+     */
+    #[Scope]
+    protected function platinum(Builder $query): void
+    {
+        $query->where($this->qualifyColumn('completion_level'), CompletionLevel::Platinum);
+    }
+
+    /**
      * Playthroughs completed during the given calendar year.
      *
      * @param  Builder<Playthrough>  $query

@@ -55,3 +55,14 @@ test('shows only the four most recent playthroughs of the user', function () {
         ->assertViewHas('recentPlaythroughs', fn ($recent) => $recent->count() === 4
             && $recent->first()->completed_at->toDateString() === '2026-01-06');
 });
+
+test('shows the platinum badge on recent platinum playthroughs only', function () {
+    $game = Game::factory()->completed()->for($this->user)->create();
+    Playthrough::factory()->for($game)->create(['completed_at' => '2026-02-10', 'completion_level' => 'story']);
+
+    $this->actingAs($this->user)->get(route('dashboard'))->assertOk()->assertDontSee('data-platinum', false);
+
+    Playthrough::factory()->for($game)->create(['completed_at' => '2026-03-10', 'completion_level' => 'platinum']);
+
+    $this->actingAs($this->user)->get(route('dashboard'))->assertOk()->assertSee('data-platinum', false);
+});

@@ -56,6 +56,29 @@ describe('index', function () {
     });
 });
 
+describe('platinum badge', function () {
+    test('marks only the games that have a platinum playthrough in the list', function () {
+        Game::factory()->for($this->user)->completed()
+            ->has(Playthrough::factory()->state(['completion_level' => 'platinum']))
+            ->create(['title' => 'Com platina']);
+
+        $this->actingAs($this->user)
+            ->get(route('games.index'))
+            ->assertOk()
+            ->assertSee('data-platinum', false);
+
+        Game::query()->delete();
+        Game::factory()->for($this->user)->completed()
+            ->has(Playthrough::factory()->state(['completion_level' => 'full']))
+            ->create(['title' => 'Sem platina']);
+
+        $this->actingAs($this->user)
+            ->get(route('games.index'))
+            ->assertOk()
+            ->assertDontSee('data-platinum', false);
+    });
+});
+
 describe('store', function () {
     test('creates a backlog game for the authenticated user by default', function () {
         $this->actingAs($this->user)

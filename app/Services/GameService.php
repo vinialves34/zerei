@@ -16,6 +16,8 @@ class GameService
     public function __construct(private RawgService $rawg) {}
 
     /**
+     * Each game carries playthroughs_count and has_platinum (at least one platinum playthrough).
+     *
      * @return LengthAwarePaginator<int, Game>
      */
     public function paginate(User $user, ?GameStatus $status = null, int $perPage = 20): LengthAwarePaginator
@@ -23,6 +25,7 @@ class GameService
         return $user->games()
             ->when($status, fn (Builder $query) => $query->where('status', $status))
             ->withCount('playthroughs')
+            ->withExists(['playthroughs as has_platinum' => fn ($query) => $query->platinum()])
             ->orderBy('title')
             ->orderBy('id')
             ->paginate($perPage);

@@ -34,6 +34,17 @@ describe('index', function () {
 });
 
 describe('show', function () {
+    test('shows the platinum badge only on platinum playthroughs', function () {
+        $game = Game::factory()->completed()->for($this->user)->create();
+        Playthrough::factory()->for($game)->create(['completed_at' => '2026-02-10', 'completion_level' => 'full']);
+
+        $this->actingAs($this->user)->get(route('years.show', 2026))->assertOk()->assertDontSee('data-platinum', false);
+
+        Playthrough::factory()->for($game)->create(['completed_at' => '2026-03-10', 'completion_level' => 'platinum']);
+
+        $this->actingAs($this->user)->get(route('years.show', 2026))->assertOk()->assertSee('data-platinum', false);
+    });
+
     test('groups the playthroughs of the year by month, with all twelve months', function () {
         $game = Game::factory()->completed()->for($this->user)->create();
         Playthrough::factory()->for($game)->create(['completed_at' => '2026-01-01']);

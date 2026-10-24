@@ -18,7 +18,12 @@
             <a href="{{ route('games.show', $game) }}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-surface-2/50">
                 <x-game-cover :title="$game->title" :url="$game->cover_url" size="sm" />
                 <div class="min-w-0 flex-1">
-                    <div class="truncate font-medium">{{ $game->title }}</div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="truncate font-medium">{{ $game->title }}</span>
+                        @if ($game->has_platinum)
+                            <x-platinum-badge />
+                        @endif
+                    </div>
                     @if ($game->playthroughs_count > 0)
                         <div class="text-xs text-muted">{{ $game->playthroughs_count }} {{ $game->playthroughs_count === 1 ? 'zerada' : 'zeradas' }}</div>
                     @endif

@@ -24,7 +24,12 @@
                             <a href="{{ route('games.show', $playthrough->game) }}" class="flex items-center gap-3 px-4 py-3 transition hover:bg-surface-2/50">
                                 <x-game-cover :title="$playthrough->game->title" :url="$playthrough->game->cover_url" size="sm" />
                                 <div class="min-w-0 flex-1">
-                                    <div class="truncate font-medium">{{ $playthrough->game->title }}</div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="truncate font-medium">{{ $playthrough->game->title }}</span>
+                                        @if ($playthrough->completion_level === \App\Enums\CompletionLevel::Platinum)
+                                            <x-platinum-badge />
+                                        @endif
+                                    </div>
                                     <div class="truncate text-xs text-muted">
                                         {{ $playthrough->completed_at->format('d/m') }} · {{ $playthrough->platform->label() }} · {{ $playthrough->completion_level->label() }}
                                     </div>
