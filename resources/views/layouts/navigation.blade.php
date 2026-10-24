@@ -90,7 +90,7 @@ $initials = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(Auth:
 <nav class="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Principal">
     @foreach ($links as $link)
         @php($active = request()->routeIs($link['active']))
-        <a href="{{ route($link['route']) }}" @class(['flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition', 'text-accent' => $active, 'text-muted hover:text-ink' => ! $active]) @if ($active) aria-current="page" @endif>
+        <a href="{{ route($link['route']) }}" @class(['flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition text-center', 'text-accent' => $active, 'text-muted hover:text-ink' => ! $active]) @if ($active) aria-current="page" @endif>
             <x-icon :name="$link['icon']" />
             {{ $link['label'] }}
         </a>
