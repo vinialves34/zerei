@@ -4,6 +4,15 @@
         Todos os anos
     </a>
 
+    <x-card class="mb-4 p-4 sm:p-5">
+        <h2 class="text-sm font-medium text-muted">Meta de {{ $year }}</h2>
+        @if ($goal)
+            <x-goal-progress :progress="$goal" :year="$year" class="mt-3" />
+        @else
+            <p class="mt-2 text-sm text-muted">Meta anual não definida.</p>
+        @endif
+    </x-card>
+
     <x-card class="mb-8 p-4 sm:p-5">
         <x-month-chart :counts="$timeline->map->count()" />
     </x-card>

@@ -3,6 +3,7 @@
 use App\Models\Game;
 use App\Models\Playthrough;
 use App\Models\User;
+use Database\Factories\YearlyGoalFactory;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -34,6 +35,47 @@ describe('index', function () {
 });
 
 describe('show', function () {
+    test('shows the goal of the year with the progress', function () {
+        $game = Game::factory()->completed()->for($this->user)->create();
+        Playthrough::factory()->for($game)->count(3)->create(['completed_at' => '2026-02-10']);
+        Playthrough::factory()->for($game)->create(['completed_at' => '2025-02-10']);
+        $this->user->yearlyGoals()->create(['year' => 2026, 'target' => 12]);
+        $this->user->yearlyGoals()->create(['year' => 2025, 'target' => 1]);
+
+        $this->actingAs($this->user)
+            ->get(route('years.show', 2026))
+            ->assertOk()
+            ->assertViewHas('goal', fn ($goal) => $goal['target'] === 12 && $goal['completed'] === 3)
+            ->assertSee('Meta de 2026')
+            ->assertSee('aria-valuenow="3"', false)
+            ->assertSee('Faltam 9')
+            ->assertDontSee('Meta de 2025')
+            ->assertDontSee('Meta anual não definida.');
+    });
+
+    test('shows the goal of a past year as reached when it was', function () {
+        $game = Game::factory()->completed()->for($this->user)->create();
+        Playthrough::factory()->for($game)->count(2)->create(['completed_at' => '2024-05-10']);
+        $this->user->yearlyGoals()->create(['year' => 2024, 'target' => 2]);
+
+        $this->actingAs($this->user)
+            ->get(route('years.show', 2024))
+            ->assertOk()
+            ->assertSee('Meta batida!');
+    });
+
+    test('says the goal is not set when the year has none or only another user has one', function () {
+        YearlyGoalFactory::new()->create(['year' => 2026]);
+
+        $this->actingAs($this->user)
+            ->get(route('years.show', 2026))
+            ->assertOk()
+            ->assertViewHas('goal', null)
+            ->assertSee('Meta de 2026')
+            ->assertSee('Meta anual não definida.')
+            ->assertDontSee('role="progressbar"', false);
+    });
+
     test('shows the platinum badge only on platinum playthroughs', function () {
         $game = Game::factory()->completed()->for($this->user)->create();
         Playthrough::factory()->for($game)->create(['completed_at' => '2026-02-10', 'completion_level' => 'full']);

@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\GoalService;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class YearController extends Controller
 {
-    public function __construct(private ReportService $reports) {}
+    public function __construct(private ReportService $reports, private GoalService $goals) {}
 
     public function index(Request $request): View
     {
@@ -21,12 +22,15 @@ class YearController extends Controller
     {
         abort_unless($year >= 1970 && $year <= 2100, 404);
 
-        $timeline = $this->reports->timeline($request->user(), $year);
+        $user = $request->user();
+        $timeline = $this->reports->timeline($user, $year);
+        $total = $timeline->sum(fn ($playthroughs) => $playthroughs->count());
 
         return view('years.show', [
             'year' => $year,
             'timeline' => $timeline,
-            'total' => $timeline->sum(fn ($playthroughs) => $playthroughs->count()),
+            'total' => $total,
+            'goal' => $this->goals->progress($user, $year, $total),
         ]);
     }
 }
