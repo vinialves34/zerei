@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\GoalController;
 use App\Http\Controllers\PlaythroughController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\YearController;
@@ -15,6 +16,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/games/rawg-search', [GameController::class, 'rawgSearch'])->middleware('throttle:30,1')->name('games.rawg-search');
     Route::resource('games', GameController::class);
     Route::resource('playthroughs', PlaythroughController::class)->except('show');
+    Route::put('/goals/{year}', [GoalController::class, 'update'])->whereNumber('year')->name('goals.update');
+    Route::delete('/goals/{year}', [GoalController::class, 'destroy'])->whereNumber('year')->name('goals.destroy');
     Route::get('/years', [YearController::class, 'index'])->name('years.index');
     Route::get('/years/{year}', [YearController::class, 'show'])->whereNumber('year')->name('years.show');
 

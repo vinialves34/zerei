@@ -41,6 +41,14 @@ class User extends Authenticatable
     }
 
     /**
+     * @return HasMany<YearlyGoal, $this>
+     */
+    public function yearlyGoals(): HasMany
+    {
+        return $this->hasMany(YearlyGoal::class);
+    }
+
+    /**
      * @return HasManyThrough<Playthrough, Game, $this>
      */
     public function playthroughs(): HasManyThrough

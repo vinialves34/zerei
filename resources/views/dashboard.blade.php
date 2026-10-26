@@ -24,6 +24,49 @@
         </a>
     </div>
 
+    <x-card class="mt-4 p-4 sm:p-5" x-data="{ editing: {{ $errors->hasAny(['target', 'year']) ? 'true' : 'false' }} }">
+        <div class="flex items-center justify-between gap-3">
+            <h2 class="text-sm font-medium text-muted">Meta de {{ $year }}</h2>
+            @if ($goalProgress)
+                <button type="button" class="inline-flex size-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface-2 hover:text-ink" x-show="! editing" x-on:click="editing = true" aria-label="Editar meta de {{ $year }}">
+                    <x-icon name="pencil" class="size-4" />
+                </button>
+            @endif
+        </div>
+
+        <div x-show="! editing">
+            @if ($goalProgress)
+                <x-goal-progress :progress="$goalProgress" :year="$year" class="mt-3" />
+            @else
+                <p class="mt-2 text-sm text-muted">Defina quantos jogos você quer zerar em {{ $year }} e acompanhe o progresso aqui.</p>
+                <x-button type="button" variant="secondary" class="mt-3" x-on:click="editing = true">Definir meta</x-button>
+            @endif
+        </div>
+
+        <div x-show="editing" x-cloak class="mt-3">
+            <form method="POST" action="{{ route('goals.update', $year) }}">
+                @csrf
+                @method('PUT')
+                <x-input-label for="goal-target" value="Quantos jogos você quer zerar em {{ $year }}?" />
+                <div class="mt-1 flex flex-wrap items-center gap-2">
+                    <x-text-input id="goal-target" name="target" type="number" min="1" max="999" inputmode="numeric" class="w-28" :value="old('target', $goalProgress['target'] ?? '')" required />
+                    <x-button>Salvar</x-button>
+                    <x-button type="button" variant="ghost" x-on:click="editing = false">Cancelar</x-button>
+                </div>
+                <x-input-error :messages="$errors->get('target')" class="mt-2" />
+                <x-input-error :messages="$errors->get('year')" class="mt-2" />
+            </form>
+
+            @if ($goalProgress)
+                <form method="POST" action="{{ route('goals.destroy', $year) }}" class="mt-3">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-sm text-danger hover:underline">Remover meta</button>
+                </form>
+            @endif
+        </div>
+    </x-card>
+
     <x-card class="mt-4 p-4 sm:p-5">
         <div class="mb-4 flex items-center justify-between">
             <h2 class="text-sm font-medium text-muted">Zeradas por mês</h2>

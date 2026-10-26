@@ -179,6 +179,7 @@ return [
         'rating' => 'nota',
         'completion_level' => 'nível de conclusão',
         'year' => 'ano',
+        'target' => 'meta',
     ],
 
 ];

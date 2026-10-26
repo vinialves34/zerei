@@ -10,13 +10,14 @@ use Illuminate\Support\Collection;
 
 class DashboardService
 {
-    public function __construct(private ReportService $reports) {}
+    public function __construct(private ReportService $reports, private GoalService $goals) {}
 
     /**
      * @return array{
      *     year: int,
      *     monthlyCounts: Collection<int, int>,
      *     completedThisYear: int,
+     *     goalProgress: array{target: int, completed: int, remaining: int, percent: int, reached: bool}|null,
      *     backlogCount: int,
      *     playingGames: Collection<int, Game>,
      *     recentPlaythroughs: Collection<int, Playthrough>,
@@ -30,6 +31,7 @@ class DashboardService
             'year' => $year,
             'monthlyCounts' => $monthlyCounts,
             'completedThisYear' => $monthlyCounts->sum(),
+            'goalProgress' => $this->goals->progress($user, $year, $monthlyCounts->sum()),
             'backlogCount' => $user->games()->where('status', GameStatus::Backlog)->count(),
             'playingGames' => $user->games()->where('status', GameStatus::Playing)->orderBy('title')->get(),
             'recentPlaythroughs' => $user->playthroughs()

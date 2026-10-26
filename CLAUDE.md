@@ -13,6 +13,7 @@ Plataforma web para registrar os jogos que o usuário zerou ao longo do ano, aco
 
 - `Game` (pertence a `User`): `title`, `status` (enum `GameStatus`: `Backlog`, `Playing`, `Completed`, `Dropped`). A lista "quero zerar" é o mesmo `Game` com status `Backlog`; não existe tabela separada de wishlist.
 - `Playthrough` (pertence a `Game`): uma zerada. `completed_at` (data), `platform` (enum `Platform`, escolhido em dropdown), `rating` (1 a 5 estrelas), `completion_level` (enum `CompletionLevel`: `Story`, `Full`, `Platinum`). Um jogo pode ter várias zeradas (rejogadas).
+- `YearlyGoal` (pertence a `User`): `year` e `target`, no máximo uma por usuário e ano. Definida e removida no painel (`PUT/DELETE /goals/{year}`); o progresso é calculado a partir das zeradas do ano.
 - Um `Game` vira `Completed` ao registrar a primeira `Playthrough`. Cadastrar uma zerada de um jogo no backlog não duplica o jogo.
 
 ## Arquitetura
@@ -34,7 +35,8 @@ Services atuais:
 | `RawgService` | Cliente da API da RAWG (`search`), com cache; devolve `[]` se a chave faltar ou a API falhar |
 | `PlaythroughService` | Listagem por ano, registrar zerada (cria o jogo se preciso e marca `Completed`), editar e remover zerada |
 | `ReportService` | Contagem por ano, contagem por mês e linha do tempo mensal |
-| `DashboardService` | Monta o resumo do painel, usando o `ReportService` |
+| `GoalService` | Meta anual (`YearlyGoal`, uma por usuário e ano): definir, remover e calcular o progresso |
+| `DashboardService` | Monta o resumo do painel, usando o `ReportService` e o `GoalService` |
 | `ProfileService` | Atualizar perfil (reverifica o e-mail quando muda) e excluir a conta |
 
 Regras para novas features:

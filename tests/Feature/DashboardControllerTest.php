@@ -66,3 +66,38 @@ test('shows the platinum badge on recent platinum playthroughs only', function (
 
     $this->actingAs($this->user)->get(route('dashboard'))->assertOk()->assertSee('data-platinum', false);
 });
+
+test('invites the user to set a goal when the year has none', function () {
+    $this->actingAs($this->user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('Definir meta')
+        ->assertDontSee('role="progressbar"', false);
+});
+
+test('shows the progress bar when the year has a goal', function () {
+    $game = Game::factory()->completed()->for($this->user)->create();
+    Playthrough::factory()->for($game)->count(3)->create(['completed_at' => '2026-02-10']);
+    $this->user->yearlyGoals()->create(['year' => 2026, 'target' => 12]);
+
+    $this->actingAs($this->user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('role="progressbar"', false)
+        ->assertSee('aria-valuenow="3"', false)
+        ->assertSee('width: 25%', false)
+        ->assertSee('Faltam 9')
+        ->assertDontSee('Meta batida!');
+});
+
+test('celebrates when the goal is reached', function () {
+    $game = Game::factory()->completed()->for($this->user)->create();
+    Playthrough::factory()->for($game)->count(2)->create(['completed_at' => '2026-02-10']);
+    $this->user->yearlyGoals()->create(['year' => 2026, 'target' => 2]);
+
+    $this->actingAs($this->user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('Meta batida!')
+        ->assertSee('width: 100%', false);
+});

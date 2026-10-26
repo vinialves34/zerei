@@ -39,3 +39,19 @@ test('summary limits the recent playthroughs to the four newest', function () {
     expect($recent)->toHaveCount(4)
         ->and($recent->first()->completed_at->toDateString())->toBe('2026-01-06');
 });
+
+test('summary includes the progress towards the goal of the year', function () {
+    $game = Game::factory()->completed()->for($this->user)->create();
+    Playthrough::factory()->for($game)->count(2)->create(['completed_at' => '2026-02-10']);
+    Playthrough::factory()->for($game)->create(['completed_at' => '2025-12-31']);
+    $this->user->yearlyGoals()->create(['year' => 2026, 'target' => 8]);
+    $this->user->yearlyGoals()->create(['year' => 2025, 'target' => 1]);
+
+    $summary = $this->service->summary($this->user, 2026);
+
+    expect($summary['goalProgress'])->toBe(['target' => 8, 'completed' => 2, 'remaining' => 6, 'percent' => 25, 'reached' => false]);
+});
+
+test('summary has no goal progress when the year has no goal', function () {
+    expect($this->service->summary($this->user, 2026)['goalProgress'])->toBeNull();
+});
