@@ -19,7 +19,8 @@ enum Platform: string
     case Wii = 'wii';
     case Nintendo3ds = '3ds';
     case NintendoDs = 'ds';
-    case Mobile = 'mobile';
+    case Nintendo64 = 'n64';
+    case SuperNintendo = 'snes';
     case Other = 'other';
 
     public function label(): string
@@ -40,7 +41,8 @@ enum Platform: string
             self::Wii => 'Wii',
             self::Nintendo3ds => 'Nintendo 3DS',
             self::NintendoDs => 'Nintendo DS',
-            self::Mobile => 'Mobile',
+            self::Nintendo64 => 'Nintendo 64',
+            self::SuperNintendo => 'Super Nintendo',
             self::Other => 'Outro',
         };
     }
