@@ -16,22 +16,26 @@ export default ({ searchUrl, title, coverUrl, rawgId }) => ({
         if (this.title.trim().length < 2) {
             this.results = [];
             this.open = false;
+            this.loading = false;
 
             return;
         }
 
+        this.loading = true;
         this.timer = setTimeout(() => this.search(), 300);
     },
 
     async search() {
-        this.controller = new AbortController();
+        const controller = new AbortController();
+
+        this.controller = controller;
         this.loading = true;
         this.unavailable = false;
 
         try {
             const response = await fetch(`${searchUrl}?q=${encodeURIComponent(this.title.trim())}`, {
                 headers: { Accept: 'application/json' },
-                signal: this.controller.signal,
+                signal: controller.signal,
             });
 
             if (! response.ok) {
@@ -47,7 +51,9 @@ export default ({ searchUrl, title, coverUrl, rawgId }) => ({
                 this.open = true;
             }
         } finally {
-            this.loading = false;
+            if (this.controller === controller) {
+                this.loading = false;
+            }
         }
     },
 

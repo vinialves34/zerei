@@ -12,7 +12,13 @@
 >
     <div class="relative">
         <x-input-label for="title" value="Título" />
-        <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" x-model="title" x-on:input="onTitleInput()" required autofocus autocomplete="off" :list="isset($titles) ? 'game-titles' : null" />
+        <div class="relative mt-1">
+            <x-text-input id="title" name="title" type="text" class="block w-full pr-10" x-model="title" x-on:input="onTitleInput()" required autofocus autocomplete="off" :list="isset($titles) ? 'game-titles' : null" />
+            <span x-show="loading" x-cloak class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted" role="status">
+                <x-icon name="loader" class="size-4 animate-spin" />
+                <span class="sr-only">Buscando jogos na RAWG…</span>
+            </span>
+        </div>
         @isset($titles)
             <datalist id="game-titles">
                 @foreach ($titles as $gameTitle)
