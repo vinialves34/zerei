@@ -5,6 +5,10 @@
         </x-card>
 
         <x-card class="p-5 sm:p-6">
+            <x-achievement-list :achievements="$achievements" />
+        </x-card>
+
+        <x-card class="p-5 sm:p-6">
             @include('profile.partials.update-profile-information-form')
         </x-card>
 

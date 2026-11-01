@@ -36,7 +36,8 @@ Services atuais:
 | `PlaythroughService` | Listagem por ano com busca pelo título do jogo e ordenação por data ou nota (`PlaythroughSort`), registrar zerada (cria o jogo se preciso e marca `Completed`), editar e remover zerada |
 | `ReportService` | Contagem por ano, contagem por mês e linha do tempo mensal |
 | `GoalService` | Meta anual (`YearlyGoal`, uma por usuário e ano): definir, remover e calcular o progresso |
-| `LevelService` | Gamificação: pontos calculados a partir das zeradas (`CompletionLevel::points()`: 50/100/200), nível (`50 × N × (N − 1)`), título (`LevelTitle`) e progresso até o próximo nível; também os pontos de um ano |
+| `LevelService` | Gamificação: pontos calculados a partir das zeradas (`CompletionLevel::points()`: 50/100/200; rejogadas do mesmo jogo valem metade) mais 300 por meta anual batida, nível (`50 × N × (N − 1)`), título (`LevelTitle`), progresso até o próximo nível, pontos de um ano e o aviso de subida de nível (`last_seen_level` no usuário, lido pelo middleware `AnnounceLevelUp`, que também compartilha `$level` com as views) |
+| `AchievementService` | Conquistas (`Achievement`) calculadas a partir das zeradas: primeira platina, 10 no ano, 3 em uma semana, 5 plataformas |
 | `DashboardService` | Monta o resumo do painel, usando o `ReportService` e o `GoalService` |
 | `ProfileService` | Atualizar perfil (reverifica o e-mail quando muda) e excluir a conta |
 

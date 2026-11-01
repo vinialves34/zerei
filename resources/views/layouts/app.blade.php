@@ -23,6 +23,16 @@
                     </header>
                 @endif
 
+                @if (session('level_up'))
+                    <div x-data="{ open: true }" x-show="open" class="mb-6 flex items-center justify-between gap-3 rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 text-sm" role="status" data-level-up>
+                        <span class="inline-flex items-center gap-2 text-gold">
+                            <x-icon name="trophy" class="size-4" />
+                            <span><strong class="font-semibold">Subiu de nível!</strong> Você chegou ao nível {{ session('level_up')['level'] }} · {{ session('level_up')['title'] }}.</span>
+                        </span>
+                        <button type="button" x-on:click="open = false" class="text-muted transition hover:text-ink" aria-label="Fechar aviso">✕</button>
+                    </div>
+                @endif
+
                 @if (session('success'))
                     <div class="mb-6 rounded-lg border border-ok/30 bg-ok/10 px-4 py-3 text-sm text-ok" role="status">
                         {{ session('success') }}

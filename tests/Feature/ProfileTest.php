@@ -112,3 +112,41 @@ test('the sidebar shows the level next to the user name', function () {
         ->assertOk()
         ->assertSee('Nv. 1 · Novato');
 });
+
+test('profile page lists the achievements and marks the unlocked ones', function () {
+    $user = User::factory()->create();
+    $game = Game::factory()->completed()->for($user)->create();
+    Playthrough::factory()->for($game)->create(['completion_level' => CompletionLevel::Platinum]);
+
+    $this->actingAs($user)
+        ->get('/profile')
+        ->assertOk()
+        ->assertSee('Conquistas')
+        ->assertSee('1 de 4 desbloqueadas')
+        ->assertSee('Primeira platina')
+        ->assertSee('5 plataformas diferentes');
+});
+
+test('the level up notice appears once after the user goes up a level', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user)->get(route('dashboard'))->assertOk()->assertDontSee('data-level-up', false);
+
+    $game = Game::factory()->completed()->for($user)->create();
+    Playthrough::factory()->for($game)->create(['completion_level' => CompletionLevel::Platinum]);
+
+    $this->actingAs($user)->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('Subiu de nível!')
+        ->assertSee('nível 2 · Novato');
+
+    $this->actingAs($user)->get(route('dashboard'))->assertOk()->assertDontSee('Subiu de nível!');
+});
+
+test('the level up notice is not shown to a user whose level was never recorded and did not change', function () {
+    $user = User::factory()->create();
+    $game = Game::factory()->completed()->for($user)->create();
+    Playthrough::factory()->for($game)->create(['completion_level' => CompletionLevel::Platinum]);
+
+    $this->actingAs($user)->get(route('dashboard'))->assertOk()->assertDontSee('Subiu de nível!');
+    expect($user->fresh()->last_seen_level)->toBe(2);
+});

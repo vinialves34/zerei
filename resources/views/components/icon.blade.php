@@ -19,6 +19,7 @@ $paths = match ($name) {
     'arrow-left' => '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
     'chevron-left' => '<path d="m15 18-6-6 6-6"/>',
     'chevron-right' => '<path d="m9 18 6-6-6-6"/>',
+    'zap' => '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
     'loader' => '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
     'search' => '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
     default => '',

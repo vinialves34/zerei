@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\DestroyProfileRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\AchievementService;
 use App\Services\LevelService;
 use App\Services\ProfileService;
 use Illuminate\Http\RedirectResponse;
@@ -13,7 +14,7 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function __construct(private ProfileService $profiles, private LevelService $levels) {}
+    public function __construct(private ProfileService $profiles, private LevelService $levels, private AchievementService $achievements) {}
 
     /**
      * Display the user's profile form.
@@ -27,6 +28,7 @@ class ProfileController extends Controller
             'level' => $this->levels->progress($user),
             'year' => now()->year,
             'yearPoints' => $this->levels->points($user, now()->year),
+            'achievements' => $this->achievements->forUser($user),
         ]);
     }
 
