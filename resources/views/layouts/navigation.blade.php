@@ -32,7 +32,10 @@ $initials = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(Auth:
         <div class="flex items-center gap-1">
             <a href="{{ route('profile.edit') }}" class="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 transition hover:bg-surface-2" title="{{ __('Profile') }}">
                 <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-medium">{{ $initials }}</span>
-                <span class="truncate text-sm">{{ Auth::user()->name }}</span>
+                <span class="min-w-0">
+                    <span class="block truncate text-sm">{{ Auth::user()->name }}</span>
+                    <span class="block truncate text-xs text-muted" data-level>Nv. {{ $level['level'] }} · {{ $level['title']->label() }}</span>
+                </span>
             </a>
             <x-theme-toggle />
             <form method="POST" action="{{ route('logout') }}">
@@ -62,7 +65,10 @@ $initials = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(Auth:
             </x-slot>
 
             <x-slot name="content">
-                <div class="border-b border-line px-4 py-2 text-xs text-muted">{{ Auth::user()->email }}</div>
+                <div class="border-b border-line px-4 py-2 text-xs text-muted">
+                    {{ Auth::user()->email }}
+                    <span class="mt-0.5 block text-ink">Nv. {{ $level['level'] }} · {{ $level['title']->label() }}</span>
+                </div>
 
                 <x-dropdown-link :href="route('profile.edit')">
                     <x-icon name="user" class="size-4" />

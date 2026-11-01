@@ -8,6 +8,18 @@ enum CompletionLevel: string
     case Full = 'full';
     case Platinum = 'platinum';
 
+    /**
+     * Points earned by a playthrough completed at this level.
+     */
+    public function points(): int
+    {
+        return match ($this) {
+            self::Story => 50,
+            self::Full => 100,
+            self::Platinum => 200,
+        };
+    }
+
     public function label(): string
     {
         return match ($this) {

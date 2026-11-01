@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\DestroyProfileRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\LevelService;
 use App\Services\ProfileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,15 +13,20 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function __construct(private ProfileService $profiles) {}
+    public function __construct(private ProfileService $profiles, private LevelService $levels) {}
 
     /**
      * Display the user's profile form.
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'level' => $this->levels->progress($user),
+            'year' => now()->year,
+            'yearPoints' => $this->levels->points($user, now()->year),
         ]);
     }
 
