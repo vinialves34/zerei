@@ -7,11 +7,13 @@
     </x-slot>
 
     <nav class="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0" aria-label="Filtrar por ano">
-        <a href="{{ route('playthroughs.index') }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => ! $year, 'bg-surface-2 text-muted hover:text-ink' => $year])>Todos os anos</a>
+        <a href="{{ route('playthroughs.index', request()->only('search', 'sort')) }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => ! $year, 'bg-surface-2 text-muted hover:text-ink' => $year])>Todos os anos</a>
         @foreach ($years as $option)
-            <a href="{{ route('playthroughs.index', ['year' => $option]) }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => $year === $option, 'bg-surface-2 text-muted hover:text-ink' => $year !== $option])>{{ $option }}</a>
+            <a href="{{ route('playthroughs.index', [...request()->only('search', 'sort'), 'year' => $option]) }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => $year === $option, 'bg-surface-2 text-muted hover:text-ink' => $year !== $option])>{{ $option }}</a>
         @endforeach
     </nav>
+
+    <x-list-search :action="route('playthroughs.index')" :search="$search" :sort="$sort" :default-sort="\App\Enums\PlaythroughSort::DateDesc" :options="\App\Enums\PlaythroughSort::cases()" :hidden="['year' => $year]" />
 
     <x-card class="divide-y divide-line">
         @forelse ($playthroughs as $playthrough)
@@ -36,9 +38,13 @@
                 </a>
             </div>
         @empty
-            <x-empty-state title="Nenhuma zerada registrada" description="Quando você terminar um jogo, registre aqui para acompanhar sua jornada.">
-                <x-button :href="route('playthroughs.create')">Registrar zerada</x-button>
-            </x-empty-state>
+            @if (filled($search))
+                <x-empty-state title="Nenhuma zerada encontrada" :description="'Nada corresponde a “'.$search.'”. Tente outro título.'" />
+            @else
+                <x-empty-state title="Nenhuma zerada registrada" description="Quando você terminar um jogo, registre aqui para acompanhar sua jornada.">
+                    <x-button :href="route('playthroughs.create')">Registrar zerada</x-button>
+                </x-empty-state>
+            @endif
         @endforelse
     </x-card>
 

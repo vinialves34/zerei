@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\GameStatus;
 use Database\Factories\GameFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -49,5 +51,24 @@ class Game extends Model
     public function playthroughs(): HasMany
     {
         return $this->hasMany(Playthrough::class);
+    }
+
+    /**
+     * Games whose title contains the term, ignoring case and treating % and _ literally.
+     *
+     * @param  Builder<Game>  $query
+     */
+    #[Scope]
+    protected function titleContaining(Builder $query, string $term): void
+    {
+        $query->whereRaw("{$this->qualifyColumn('title')} LIKE ? ESCAPE ?", [static::likePattern($term), '\\']);
+    }
+
+    /**
+     * LIKE pattern that matches the term anywhere, escaping the wildcard characters.
+     */
+    public static function likePattern(string $term): string
+    {
+        return '%'.addcslashes($term, '%_\\').'%';
     }
 }

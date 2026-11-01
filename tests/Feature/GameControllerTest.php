@@ -56,6 +56,72 @@ describe('index', function () {
     });
 });
 
+describe('search and sort', function () {
+    test('searches by title', function () {
+        Game::factory()->for($this->user)->create(['title' => 'Hollow Knight']);
+        Game::factory()->for($this->user)->create(['title' => 'Celeste']);
+
+        $this->actingAs($this->user)
+            ->get(route('games.index', ['search' => 'knight']))
+            ->assertOk()
+            ->assertSee('Hollow Knight')
+            ->assertDontSee('Celeste');
+    });
+
+    test('says nothing matched the search', function () {
+        Game::factory()->for($this->user)->create(['title' => 'Celeste']);
+
+        $this->actingAs($this->user)
+            ->get(route('games.index', ['search' => 'zzz']))
+            ->assertOk()
+            ->assertSee('Nada corresponde a “zzz”.')
+            ->assertSee('Limpar');
+    });
+
+    test('sorts the titles from Z to A', function () {
+        Game::factory()->for($this->user)->create(['title' => 'Abzu']);
+        Game::factory()->for($this->user)->create(['title' => 'Celeste']);
+
+        $this->actingAs($this->user)
+            ->get(route('games.index', ['sort' => 'title-desc']))
+            ->assertOk()
+            ->assertSeeInOrder(['Celeste', 'Abzu'])
+            ->assertSee('<option value="title-desc" selected>', false);
+    });
+
+    test('ignores an unknown sort and falls back to A to Z', function () {
+        Game::factory()->for($this->user)->create(['title' => 'Abzu']);
+        Game::factory()->for($this->user)->create(['title' => 'Celeste']);
+
+        $this->actingAs($this->user)
+            ->get(route('games.index', ['sort' => 'inexistente']))
+            ->assertOk()
+            ->assertSeeInOrder(['Abzu', 'Celeste']);
+    });
+
+    test('keeps the search and sort in the status filters and in the pagination links', function () {
+        Game::factory()->for($this->user)->count(12)->sequence(fn ($sequence) => ['title' => sprintf('Zelda %02d', $sequence->index)])->create();
+
+        $response = $this->actingAs($this->user)
+            ->get(route('games.index', ['search' => 'zelda', 'sort' => 'title-desc', 'status' => 'backlog']))
+            ->assertOk();
+
+        $response->assertSee('search=zelda', false)
+            ->assertSee('sort=title-desc', false)
+            ->assertSee('page=2', false)
+            ->assertSee('name="status" value="backlog"', false);
+    });
+
+    test('does not leak the games of other users through the search', function () {
+        Game::factory()->create(['title' => 'Segredo alheio']);
+
+        $this->actingAs($this->user)
+            ->get(route('games.index', ['search' => 'segredo']))
+            ->assertOk()
+            ->assertDontSee('Segredo alheio');
+    });
+});
+
 describe('pagination', function () {
     test('splits the list into pages of ten and keeps the status filter in the links', function () {
         Game::factory()->for($this->user)->count(12)->sequence(fn ($sequence) => ['title' => sprintf('Jogo %02d', $sequence->index)])->create();

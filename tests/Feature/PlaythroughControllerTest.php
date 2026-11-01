@@ -30,6 +30,72 @@ test('guests are redirected to the login screen', function (string $method, stri
 ]);
 
 describe('index', function () {
+    test('searches by the title of the game', function () {
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user)->state(['title' => 'Hollow Knight']))->create();
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user)->state(['title' => 'Celeste']))->create();
+
+        $this->actingAs($this->user)
+            ->get(route('playthroughs.index', ['search' => 'hollow']))
+            ->assertOk()
+            ->assertSee('Hollow Knight')
+            ->assertDontSee('Celeste');
+    });
+
+    test('says nothing matched the search', function () {
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user))->create();
+
+        $this->actingAs($this->user)
+            ->get(route('playthroughs.index', ['search' => 'zzz']))
+            ->assertOk()
+            ->assertSee('Nenhuma zerada encontrada')
+            ->assertSee('Nada corresponde a “zzz”.');
+    });
+
+    test('sorts by rating', function () {
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user)->state(['title' => 'Nota baixa']))->create(['rating' => 1]);
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user)->state(['title' => 'Nota alta']))->create(['rating' => 5]);
+
+        $this->actingAs($this->user)
+            ->get(route('playthroughs.index', ['sort' => 'rating-desc']))
+            ->assertOk()
+            ->assertSeeInOrder(['Nota alta', 'Nota baixa'])
+            ->assertSee('<option value="rating-desc" selected>', false);
+
+        $this->actingAs($this->user)
+            ->get(route('playthroughs.index', ['sort' => 'rating-asc']))
+            ->assertSeeInOrder(['Nota baixa', 'Nota alta']);
+    });
+
+    test('ignores an unknown sort and keeps the newest first', function () {
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user)->state(['title' => 'Antigo']))->create(['completed_at' => '2024-01-10']);
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user)->state(['title' => 'Recente']))->create(['completed_at' => '2025-06-20']);
+
+        $this->actingAs($this->user)
+            ->get(route('playthroughs.index', ['sort' => 'xpto']))
+            ->assertOk()
+            ->assertSeeInOrder(['Recente', 'Antigo']);
+    });
+
+    test('keeps the search and sort in the year filters and the year in the form', function () {
+        Playthrough::factory()->for(Game::factory()->completed()->for($this->user))->create(['completed_at' => '2025-06-20']);
+
+        $this->actingAs($this->user)
+            ->get(route('playthroughs.index', ['year' => 2025, 'search' => 'a', 'sort' => 'rating-asc']))
+            ->assertOk()
+            ->assertSee('search=a', false)
+            ->assertSee('sort=rating-asc', false)
+            ->assertSee('name="year" value="2025"', false);
+    });
+
+    test('does not leak the playthroughs of other users through the search', function () {
+        Playthrough::factory()->for(Game::factory()->completed()->state(['title' => 'Segredo alheio']))->create();
+
+        $this->actingAs($this->user)
+            ->get(route('playthroughs.index', ['search' => 'segredo']))
+            ->assertOk()
+            ->assertDontSee('Segredo alheio');
+    });
+
     test('splits the list into pages of ten and keeps the year filter in the links', function () {
         Playthrough::factory()->for(Game::factory()->completed()->for($this->user))->count(12)
             ->sequence(fn ($sequence) => ['completed_at' => '2025-06-'.sprintf('%02d', $sequence->index + 1)])

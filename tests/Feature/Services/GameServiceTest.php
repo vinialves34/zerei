@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\GameSort;
 use App\Enums\GameStatus;
 use App\Models\Game;
 use App\Models\Playthrough;
@@ -196,4 +197,51 @@ test('paginate returns ten games per page by default', function () {
     expect($games->perPage())->toBe(10)
         ->and($games->items())->toHaveCount(10)
         ->and($games->total())->toBe(11);
+});
+
+describe('search and sort', function () {
+    test('paginate searches the title ignoring case and only among the games of the user', function () {
+        Game::factory()->for($this->user)->create(['title' => 'Hollow Knight']);
+        Game::factory()->for($this->user)->create(['title' => 'Celeste']);
+        Game::factory()->create(['title' => 'Knights of the Old Republic']);
+
+        $games = $this->service->paginate($this->user, search: 'KNIGHT');
+
+        expect($games->pluck('title')->all())->toBe(['Hollow Knight']);
+    });
+
+    test('paginate treats the wildcard characters of the search literally', function () {
+        Game::factory()->for($this->user)->create(['title' => '100% Orange Juice']);
+        Game::factory()->for($this->user)->create(['title' => 'Under_score']);
+        Game::factory()->for($this->user)->create(['title' => 'Celeste']);
+
+        expect($this->service->paginate($this->user, search: '%')->pluck('title')->all())->toBe(['100% Orange Juice'])
+            ->and($this->service->paginate($this->user, search: '_')->pluck('title')->all())->toBe(['Under_score'])
+            ->and($this->service->paginate($this->user, search: 'Cel\\')->total())->toBe(0);
+    });
+
+    test('paginate ignores a blank search', function () {
+        Game::factory()->for($this->user)->count(2)->create();
+
+        expect($this->service->paginate($this->user, search: '')->total())->toBe(2)
+            ->and($this->service->paginate($this->user, search: null)->total())->toBe(2);
+    });
+
+    test('paginate combines the search with the status filter', function () {
+        Game::factory()->for($this->user)->playing()->create(['title' => 'Zelda A']);
+        Game::factory()->for($this->user)->create(['title' => 'Zelda B']);
+
+        $games = $this->service->paginate($this->user, GameStatus::Playing, 'zelda');
+
+        expect($games->pluck('title')->all())->toBe(['Zelda A']);
+    });
+
+    test('paginate sorts the titles in both directions', function () {
+        foreach (['Banjo', 'Celeste', 'Abzu'] as $title) {
+            Game::factory()->for($this->user)->create(['title' => $title]);
+        }
+
+        expect($this->service->paginate($this->user, sort: GameSort::TitleAsc)->pluck('title')->all())->toBe(['Abzu', 'Banjo', 'Celeste'])
+            ->and($this->service->paginate($this->user, sort: GameSort::TitleDesc)->pluck('title')->all())->toBe(['Celeste', 'Banjo', 'Abzu']);
+    });
 });

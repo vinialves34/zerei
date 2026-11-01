@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\GameSort;
 use App\Enums\GameStatus;
 use App\Models\Game;
 use App\Models\User;
@@ -20,13 +21,19 @@ class GameService
      *
      * @return LengthAwarePaginator<int, Game>
      */
-    public function paginate(User $user, ?GameStatus $status = null, int $perPage = 10): LengthAwarePaginator
-    {
+    public function paginate(
+        User $user,
+        ?GameStatus $status = null,
+        ?string $search = null,
+        GameSort $sort = GameSort::TitleAsc,
+        int $perPage = 10,
+    ): LengthAwarePaginator {
         return $user->games()
             ->when($status, fn (Builder $query) => $query->where('status', $status))
+            ->when(filled($search), fn (Builder $query) => $query->titleContaining($search))
             ->withCount('playthroughs')
             ->withExists(['playthroughs as has_platinum' => fn ($query) => $query->platinum()])
-            ->orderBy('title')
+            ->orderBy('title', $sort === GameSort::TitleDesc ? 'desc' : 'asc')
             ->orderBy('id')
             ->paginate($perPage);
     }

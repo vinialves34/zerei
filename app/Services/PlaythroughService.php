@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\GameStatus;
+use App\Enums\PlaythroughSort;
 use App\Models\Playthrough;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -14,14 +15,26 @@ class PlaythroughService
     /**
      * @return LengthAwarePaginator<int, Playthrough>
      */
-    public function paginate(User $user, ?int $year = null, int $perPage = 10): LengthAwarePaginator
-    {
-        return $user->playthroughs()
+    public function paginate(
+        User $user,
+        ?int $year = null,
+        ?string $search = null,
+        PlaythroughSort $sort = PlaythroughSort::DateDesc,
+        int $perPage = 10,
+    ): LengthAwarePaginator {
+        $query = $user->playthroughs()
             ->with('game')
             ->when($year, fn (Builder $query) => $query->completedInYear($year))
-            ->orderByDesc('completed_at')
-            ->orderByDesc('playthroughs.id')
-            ->paginate($perPage);
+            ->when(filled($search), fn (Builder $query) => $query->gameTitleContaining($search));
+
+        match ($sort) {
+            PlaythroughSort::DateDesc => $query->orderByDesc('completed_at')->orderByDesc('playthroughs.id'),
+            PlaythroughSort::DateAsc => $query->orderBy('completed_at')->orderBy('playthroughs.id'),
+            PlaythroughSort::RatingDesc => $query->orderByDesc('rating')->orderByDesc('completed_at')->orderByDesc('playthroughs.id'),
+            PlaythroughSort::RatingAsc => $query->orderBy('rating')->orderByDesc('completed_at')->orderByDesc('playthroughs.id'),
+        };
+
+        return $query->paginate($perPage);
     }
 
     /**

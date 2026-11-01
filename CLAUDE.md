@@ -31,9 +31,9 @@ Services atuais:
 
 | Service | Responsabilidade |
 | --- | --- |
-| `GameService` | Listagem paginada com filtro de status, criação, edição e remoção de jogos, títulos para autocomplete, capas (busca na RAWG e vínculo por título) |
+| `GameService` | Listagem paginada com filtro de status, busca por título e ordenação (`GameSort`), criação, edição e remoção de jogos, títulos para autocomplete, capas (busca na RAWG e vínculo por título) |
 | `RawgService` | Cliente da API da RAWG (`search`), com cache; devolve `[]` se a chave faltar ou a API falhar |
-| `PlaythroughService` | Listagem por ano, registrar zerada (cria o jogo se preciso e marca `Completed`), editar e remover zerada |
+| `PlaythroughService` | Listagem por ano com busca pelo título do jogo e ordenação por data ou nota (`PlaythroughSort`), registrar zerada (cria o jogo se preciso e marca `Completed`), editar e remover zerada |
 | `ReportService` | Contagem por ano, contagem por mês e linha do tempo mensal |
 | `GoalService` | Meta anual (`YearlyGoal`, uma por usuário e ano): definir, remover e calcular o progresso |
 | `DashboardService` | Monta o resumo do painel, usando o `ReportService` e o `GoalService` |
@@ -55,7 +55,7 @@ Regras para novas features:
 - **Filtro por ano:** use o scope `Playthrough::completedInYear()`. Não use `whereBetween` com `Y-12-31`: o cast `date` grava `00:00:00` e o último dia ficaria de fora.
 - **Tema visual:** escuro por padrão, claro opcional (`data-theme="light"` no `<html>`, salvo em `localStorage`). As cores são variáveis CSS em `resources/css/app.css` expostas como utilitários Tailwind: `bg-app`, `bg-surface`, `bg-surface-2`, `border-line`, `text-ink`, `text-muted`, `bg-accent`, `text-ok`, `text-gold`, `text-danger`. Não use `gray-*`, `indigo-*` nem `bg-white` nas views; use esses tokens para o tema funcionar nos dois modos.
 - **Layout responsivo:** `layouts/app` usa sidebar fixa a partir de `lg`; abaixo disso, barra superior, abas inferiores e botão flutuante de registrar zerada. Páginas usam `<x-app-layout title="..." subtitle="...">` com slot opcional `actions`.
-- **Componentes:** reutilize `x-button` (variantes `primary`, `secondary`, `danger`, `ghost`; aceita `href`), `x-card`, `x-icon`, `x-pill`, `x-status-badge`, `x-rating`, `x-game-cover`, `x-month-chart` e `x-empty-state` antes de criar markup novo. Ícones novos entram no `match` de `components/icon.blade.php`.
+- **Componentes:** reutilize `x-button` (variantes `primary`, `secondary`, `danger`, `ghost`; aceita `href`), `x-card`, `x-icon`, `x-pill`, `x-status-badge`, `x-rating`, `x-game-cover`, `x-month-chart`, `x-goal-progress`, `x-platinum-badge`, `x-list-search` (busca e ordenação das listagens) e `x-empty-state` antes de criar markup novo. Ícones novos entram no `match` de `components/icon.blade.php`.
 - **Classes que conflitam:** `x-button` já tem `inline-flex`; para esconder em telas pequenas use `max-lg:hidden`, não `hidden lg:inline-flex`.
 - **Datas:** timezone `America/Sao_Paulo`, locale `pt_BR`.
 

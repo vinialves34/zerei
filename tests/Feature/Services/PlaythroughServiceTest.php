@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\GameStatus;
+use App\Enums\PlaythroughSort;
 use App\Models\Game;
 use App\Models\Playthrough;
 use App\Models\User;
@@ -190,4 +191,61 @@ test('registering a playthrough completes a paused game', function () {
 
     expect($game->fresh()->status)->toBe(GameStatus::Completed)
         ->and($this->user->games()->count())->toBe(1);
+});
+
+describe('search and sort', function () {
+    beforeEach(function () {
+        $this->make = fn (string $title, string $date, int $rating) => Playthrough::factory()
+            ->for(Game::factory()->completed()->for($this->user)->state(['title' => $title]))
+            ->create(['completed_at' => $date, 'rating' => $rating]);
+    });
+
+    test('paginate searches the title of the game among the playthroughs of the user', function () {
+        ($this->make)('Hollow Knight', '2026-01-10', 5);
+        ($this->make)('Celeste', '2026-02-10', 4);
+        Playthrough::factory()->for(Game::factory()->completed()->state(['title' => 'Hollow Alheio']))->create();
+
+        $titles = $this->service->paginate($this->user, search: 'hollow')->getCollection()->map->game->map->title->all();
+
+        expect($titles)->toBe(['Hollow Knight']);
+    });
+
+    test('paginate treats the wildcard characters of the search literally', function () {
+        ($this->make)('100% Orange Juice', '2026-01-10', 5);
+        ($this->make)('Celeste', '2026-02-10', 4);
+
+        expect($this->service->paginate($this->user, search: '%')->total())->toBe(1)
+            ->and($this->service->paginate($this->user, search: '_')->total())->toBe(0);
+    });
+
+    test('paginate combines the search with the year', function () {
+        ($this->make)('Zelda A', '2025-05-10', 5);
+        ($this->make)('Zelda B', '2026-05-10', 5);
+
+        $titles = $this->service->paginate($this->user, 2026, 'zelda')->getCollection()->map->game->map->title->all();
+
+        expect($titles)->toBe(['Zelda B']);
+    });
+
+    test('paginate sorts by date in both directions', function () {
+        ($this->make)('A', '2026-02-10', 3);
+        ($this->make)('B', '2026-03-10', 3);
+        ($this->make)('C', '2026-01-10', 3);
+
+        $titles = fn (PlaythroughSort $sort) => $this->service->paginate($this->user, sort: $sort)->getCollection()->map->game->map->title->all();
+
+        expect($titles(PlaythroughSort::DateDesc))->toBe(['B', 'A', 'C'])
+            ->and($titles(PlaythroughSort::DateAsc))->toBe(['C', 'A', 'B']);
+    });
+
+    test('paginate sorts by rating and breaks ties with the newest date', function () {
+        ($this->make)('A', '2026-01-10', 5);
+        ($this->make)('B', '2026-03-10', 5);
+        ($this->make)('C', '2026-02-10', 2);
+
+        $titles = fn (PlaythroughSort $sort) => $this->service->paginate($this->user, sort: $sort)->getCollection()->map->game->map->title->all();
+
+        expect($titles(PlaythroughSort::RatingDesc))->toBe(['B', 'A', 'C'])
+            ->and($titles(PlaythroughSort::RatingAsc))->toBe(['C', 'B', 'A']);
+    });
 });

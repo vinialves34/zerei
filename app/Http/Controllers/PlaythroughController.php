@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PlaythroughSort;
 use App\Http\Requests\StorePlaythroughRequest;
 use App\Http\Requests\UpdatePlaythroughRequest;
 use App\Models\Playthrough;
@@ -25,11 +26,15 @@ class PlaythroughController extends Controller
     {
         $user = $request->user();
         $year = $request->integer('year') ?: null;
+        $search = $request->string('search')->trim()->limit(100, '')->value() ?: null;
+        $sort = $request->enum('sort', PlaythroughSort::class) ?? PlaythroughSort::DateDesc;
 
         return view('playthroughs.index', [
-            'playthroughs' => $this->playthroughs->paginate($user, $year)->withQueryString(),
+            'playthroughs' => $this->playthroughs->paginate($user, $year, $search, $sort)->withQueryString(),
             'years' => $this->reports->completionsByYear($user)->keys(),
             'year' => $year,
+            'search' => $search,
+            'sort' => $sort,
         ]);
     }
 

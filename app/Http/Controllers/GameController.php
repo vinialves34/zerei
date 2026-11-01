@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GameSort;
 use App\Enums\GameStatus;
 use App\Http\Requests\RawgSearchRequest;
 use App\Http\Requests\StoreGameRequest;
@@ -21,10 +22,14 @@ class GameController extends Controller
     public function index(Request $request): View
     {
         $status = $request->enum('status', GameStatus::class);
+        $search = $request->string('search')->trim()->limit(100, '')->value() ?: null;
+        $sort = $request->enum('sort', GameSort::class) ?? GameSort::TitleAsc;
 
         return view('games.index', [
-            'games' => $this->games->paginate($request->user(), $status)->withQueryString(),
+            'games' => $this->games->paginate($request->user(), $status, $search, $sort)->withQueryString(),
             'status' => $status,
+            'search' => $search,
+            'sort' => $sort,
         ]);
     }
 

@@ -42,6 +42,18 @@ class Playthrough extends Model
     }
 
     /**
+     * Playthroughs of games whose title contains the term. Relies on the games table being
+     * joined, as it is when the query comes from User::playthroughs().
+     *
+     * @param  Builder<Playthrough>  $query
+     */
+    #[Scope]
+    protected function gameTitleContaining(Builder $query, string $term): void
+    {
+        $query->whereRaw('games.title LIKE ? ESCAPE ?', [Game::likePattern($term), '\\']);
+    }
+
+    /**
      * Playthroughs completed with the platinum trophy.
      *
      * @param  Builder<Playthrough>  $query

@@ -7,11 +7,13 @@
     </x-slot>
 
     <nav class="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0" aria-label="Filtrar por status">
-        <a href="{{ route('games.index') }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => ! $status, 'bg-surface-2 text-muted hover:text-ink' => $status])>Todos</a>
+        <a href="{{ route('games.index', request()->only('search', 'sort')) }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => ! $status, 'bg-surface-2 text-muted hover:text-ink' => $status])>Todos</a>
         @foreach (\App\Enums\GameStatus::cases() as $option)
-            <a href="{{ route('games.index', ['status' => $option->value]) }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => $status === $option, 'bg-surface-2 text-muted hover:text-ink' => $status !== $option])>{{ $option->label() }}</a>
+            <a href="{{ route('games.index', [...request()->only('search', 'sort'), 'status' => $option->value]) }}" @class(['shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', 'bg-accent text-accent-ink' => $status === $option, 'bg-surface-2 text-muted hover:text-ink' => $status !== $option])>{{ $option->label() }}</a>
         @endforeach
     </nav>
+
+    <x-list-search :action="route('games.index')" :search="$search" :sort="$sort" :default-sort="\App\Enums\GameSort::TitleAsc" :options="\App\Enums\GameSort::cases()" :hidden="['status' => $status?->value]" />
 
     <x-card class="divide-y divide-line">
         @forelse ($games as $game)
@@ -31,9 +33,13 @@
                 <x-status-badge :status="$game->status" />
             </a>
         @empty
-            <x-empty-state title="Nenhum jogo encontrado" description="Cadastre os jogos que você quer zerar ou registre uma zerada.">
-                <x-button :href="route('games.create')">Novo jogo</x-button>
-            </x-empty-state>
+            @if (filled($search))
+                <x-empty-state title="Nenhum jogo encontrado" :description="'Nada corresponde a “'.$search.'”. Tente outro título.'" />
+            @else
+                <x-empty-state title="Nenhum jogo encontrado" description="Cadastre os jogos que você quer zerar ou registre uma zerada.">
+                    <x-button :href="route('games.create')">Novo jogo</x-button>
+                </x-empty-state>
+            @endif
         @endforelse
     </x-card>
 
