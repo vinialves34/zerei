@@ -182,3 +182,12 @@ test('paginate returns ten playthroughs per page by default', function () {
         ->and($playthroughs->items())->toHaveCount(10)
         ->and($playthroughs->total())->toBe(11);
 });
+
+test('registering a playthrough completes a paused game', function () {
+    $game = Game::factory()->for($this->user)->paused()->create(['title' => 'Hades']);
+
+    $this->service->register($this->user, 'Hades', $this->attributes);
+
+    expect($game->fresh()->status)->toBe(GameStatus::Completed)
+        ->and($this->user->games()->count())->toBe(1);
+});

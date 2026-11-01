@@ -39,6 +39,11 @@ class GameFactory extends Factory
         return $this->state(['status' => GameStatus::Playing]);
     }
 
+    public function paused(): static
+    {
+        return $this->state(['status' => GameStatus::Paused]);
+    }
+
     public function completed(): static
     {
         return $this->state(['status' => GameStatus::Completed]);

@@ -76,6 +76,47 @@ describe('pagination', function () {
     });
 });
 
+describe('paused status', function () {
+    test('creates a paused game', function () {
+        $this->actingAs($this->user)
+            ->post(route('games.store'), ['title' => 'Hades', 'status' => 'paused'])
+            ->assertSessionHasNoErrors();
+
+        expect($this->user->games()->sole()->status)->toBe(GameStatus::Paused);
+    });
+
+    test('changes a game to paused and back', function () {
+        $game = Game::factory()->playing()->for($this->user)->create();
+
+        $this->actingAs($this->user)->put(route('games.update', $game), ['title' => $game->title, 'status' => 'paused']);
+        expect($game->fresh()->status)->toBe(GameStatus::Paused);
+
+        $this->actingAs($this->user)->put(route('games.update', $game), ['title' => $game->title, 'status' => 'playing']);
+        expect($game->fresh()->status)->toBe(GameStatus::Playing);
+    });
+
+    test('filters the list by the paused status and shows its badge', function () {
+        Game::factory()->for($this->user)->paused()->create(['title' => 'Em pausa']);
+        Game::factory()->for($this->user)->create(['title' => 'No backlog']);
+
+        $this->actingAs($this->user)
+            ->get(route('games.index', ['status' => 'paused']))
+            ->assertOk()
+            ->assertSee('Em pausa')
+            ->assertSee('Pausado')
+            ->assertDontSee('No backlog');
+    });
+
+    test('offers the paused option and preselects it when editing a paused game', function () {
+        $game = Game::factory()->for($this->user)->paused()->create();
+
+        $this->actingAs($this->user)
+            ->get(route('games.edit', $game))
+            ->assertOk()
+            ->assertSee('<option value="paused" selected>Pausado</option>', false);
+    });
+});
+
 describe('platinum badge', function () {
     test('marks only the games that have a platinum playthrough in the list', function () {
         Game::factory()->for($this->user)->completed()

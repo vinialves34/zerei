@@ -11,7 +11,7 @@ Plataforma web para registrar os jogos que o usuário zerou ao longo do ano, aco
 
 ## Domínio
 
-- `Game` (pertence a `User`): `title`, `status` (enum `GameStatus`: `Backlog`, `Playing`, `Completed`, `Dropped`). A lista "quero zerar" é o mesmo `Game` com status `Backlog`; não existe tabela separada de wishlist.
+- `Game` (pertence a `User`): `title`, `status` (enum `GameStatus`: `Backlog`, `Playing`, `Paused`, `Completed`, `Dropped`). A lista "quero zerar" é o mesmo `Game` com status `Backlog`; não existe tabela separada de wishlist.
 - `Playthrough` (pertence a `Game`): uma zerada. `completed_at` (data), `platform` (enum `Platform`, escolhido em dropdown), `rating` (1 a 5 estrelas), `completion_level` (enum `CompletionLevel`: `Story`, `Full`, `Platinum`). Um jogo pode ter várias zeradas (rejogadas).
 - `YearlyGoal` (pertence a `User`): `year` e `target`, no máximo uma por usuário e ano. Definida e removida no painel (`PUT/DELETE /goals/{year}`); o progresso é calculado a partir das zeradas do ano.
 - Um `Game` vira `Completed` ao registrar a primeira `Playthrough`. Cadastrar uma zerada de um jogo no backlog não duplica o jogo.
@@ -63,7 +63,7 @@ Regras para novas features:
 
 1. Autenticação e perfil (Breeze).
 2. Jogos zerados: listagem com filtro por ano, cadastro/edição/remoção de zeradas.
-3. Backlog: listagem, cadastro, mudança de status (Backlog → Jogando → Zerado/Abandonado).
+3. Backlog: listagem, cadastro, mudança de status (Backlog → Jogando → Pausado/Zerado/Abandonado).
 4. Contagem por ano: quantos jogos zerados em cada ano.
 5. Linha do tempo mês a mês, por ano.
 

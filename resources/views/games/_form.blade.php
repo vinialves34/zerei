@@ -11,7 +11,7 @@
         @if ($isCompleted)
             <option value="" @selected(blank($selectedStatus))>Zerado (manter)</option>
         @endif
-        @foreach ([\App\Enums\GameStatus::Backlog, \App\Enums\GameStatus::Playing, \App\Enums\GameStatus::Dropped] as $option)
+        @foreach ([\App\Enums\GameStatus::Backlog, \App\Enums\GameStatus::Playing, \App\Enums\GameStatus::Paused, \App\Enums\GameStatus::Dropped] as $option)
             <option value="{{ $option->value }}" @selected($selectedStatus === $option->value)>{{ $option->label() }}</option>
         @endforeach
     </x-select-input>

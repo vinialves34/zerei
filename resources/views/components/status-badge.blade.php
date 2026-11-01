@@ -3,6 +3,7 @@
 @php
 $classes = match ($status) {
     \App\Enums\GameStatus::Playing => 'bg-ok/15 text-ok',
+    \App\Enums\GameStatus::Paused => 'bg-gold/15 text-gold',
     \App\Enums\GameStatus::Completed => 'bg-accent/15 text-accent',
     \App\Enums\GameStatus::Dropped => 'bg-danger/15 text-danger',
     default => 'bg-surface-2 text-muted',

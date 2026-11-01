@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
 
         Game::factory()->count(5)->for($user)->create();
         Game::factory()->count(2)->playing()->for($user)->create();
+        Game::factory()->paused()->for($user)->create();
         Game::factory()->dropped()->for($user)->create();
     }
 }
